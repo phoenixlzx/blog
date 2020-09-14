@@ -1,20 +1,34 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 尝试迁移到 AWS Cloud · Phoenix's island</title><meta name="description" content="尝试迁移到 AWS Cloud - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">尝试迁移到 AWS Cloud</h1><div class="post-info">2016年1月21日</div><div class="post-content"><p><a target="_blank" rel="noopener" href="https://v2ex.com/t/252123">发了个帖子</a>抱怨服务器一大堆却没个放自己个人站的地儿。其实是服务器都是生产环境要跑各种业务，不能放自己的东西。其实个人站就一个博客一个知识库，还都是静态的，连买个 Linode 都觉得资源浪费。放在 GCE f1.micro 上吧，是便宜了不过网络抽死。如果不是因为要用 SSL 防运营商劫持和中间人攻击，真的直接扔 GitHub 了。</p>
+<p>感谢 <a target="_blank" rel="noopener" href="https://sparanoid.com/">@sparanoid</a> 的建议，花了一下午尝试将自己的静态网站部署在 AWS 云上。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<h2 id="AWS-准备工作"><a href="#AWS-准备工作" class="headerlink" title="AWS 准备工作"></a>AWS 准备工作</h2><h3 id="S3-文件桶"><a href="#S3-文件桶" class="headerlink" title="S3 文件桶"></a>S3 文件桶</h3><p>创建一个 S3 文件桶，并在「属性」 -&gt; 「静态网站托管」页选择「启用网站托管」，然后索引文件填写 <code>index.html</code>。</p>
+<p>在此页面会得到一个网站终端节点，例如 <code>example.com.s3-website-ap-northeast-1.amazonaws.com</code> 这样。先复制备用。</p>
+<h3 id="上传-SSL-证书"><a href="#上传-SSL-证书" class="headerlink" title="上传 SSL 证书"></a>上传 SSL 证书</h3><p>其实之前签发了一张三年的 ShinoSaki ECC 证书，然而 AWS 不认(ノ=Д=)ノ┻━┻ 只好去签了 AlphaSSL 的泛域名。</p>
+<p>需要安装 <a target="_blank" rel="noopener" href="https://github.com/aws/aws-cli">awscli</a>，可以直接 <code>sudo pip install awscli</code>。</p>
+<p>上传证书命令如下（示例名称记得改成自己的哦）</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws iam upload-server-certificate <span class="params">--server-certificate-name</span> cert-name <span class="params">--certificate-body</span> file:<span class="string">//example_com.pem</span> <span class="params">--private-key</span> file:<span class="string">//example_com.key</span> <span class="params">--certificate-chain</span> file:<span class="string">//ca.pem</span> <span class="params">--path</span> <span class="string">/cloudfront/yoursite/</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>前面的 <code>file://</code> 也不能移去，否则会报错 <code>A client error (MalformedCertificate) occurred when calling the UploadServerCertificate operation: Unable to parse certificate. Please ensure the certificate is in PEM format.</code></p>
+<h3 id="创建-CloudFront-Distribution"><a href="#创建-CloudFront-Distribution" class="headerlink" title="创建 CloudFront Distribution"></a>创建 CloudFront Distribution</h3><p>如果是 Jekyll 一类会创建「文件名.html」的程序，<code>origin</code> 直接下拉菜单中选择 S3 的文件桶地址即可。但是 Hexo 和 MinoriWiki 都是目录名下的 <code>index.html</code>，所以只能使用之前得到的网站终端节点。填入地址后，下面的配置随自己的想法选择即可。<code>Alternate Domain Names (CNAMEs)</code> 填写自己的域名，然后下面的 SSL 选择 <code>Custom SSL Certificate (example.com)</code> 和一个对应的证书。<code>Default Root Object</code> 填写 <code>index.html</code>。</p>
+<p>为什么只能使用网站终端节点而不是 S3 地址的原因是 CloudFront 和 S3 的 Default Root Object 工作原理不同，如果是请求子目录，那么 CloudFront 不会给默认加上 <code>index.html</code> 导致 403。</p>
+<p>创建之后 CloudFront 需要（很长一段）时间来部署。于是先把分配的 CDN 地址 <code>xxxxxxxxxxxxx.cloudfront.net.</code> 复制备用。</p>
+<h3 id="设置-Route-53"><a href="#设置-Route-53" class="headerlink" title="设置 Route 53"></a>设置 Route 53</h3><p>建立一个 Route53 Hosted Zone，然后导入以前的 zonefile 或者什么的。网站的地址 Type 选择 <code>A - IPv4 address</code>，然后 Alias 选择 <code>Yes</code>。Alias Target 是刚才复制的 CloudFront 的 CDN 地址。Routing Policy 选择 <code>Simple</code>——GeoDNS 将交由 CloudFront 完成。</p>
+<h2 id="网站程序准备"><a href="#网站程序准备" class="headerlink" title="网站程序准备"></a>网站程序准备</h2><h3 id="Hexo"><a href="#Hexo" class="headerlink" title="Hexo"></a>Hexo</h3><p>Hexo 已经有了现成的 S3 deployer，不过主页上的那个不工作也不管别人给提交的 PR。所以推荐使用 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/hexo-deployer-aws-s3">hexo-deployer-aws-s3</a>。</p>
+<p>不过貌似是会强制覆盖每个文件的，上传花了好久啊比 Git 慢多了… S3 啥时候支持 Git (ノ=Д=)ノ┻━┻</p>
+<h3 id="MinoriWiki"><a href="#MinoriWiki" class="headerlink" title="MinoriWiki"></a>MinoriWiki</h3><p><a target="_blank" rel="noopener" href="https://github.com/phoenixlzx/MinoriWiki">MinoriWiki</a> 从一开始就是面向 UNIX 系使用者的一套超简单个人知识库，所以压根没考虑用 S3 啊(ノ=Д=)ノ┻━┻</p>
+<p>不过自己写的东西好处就是可以各种改（死）所以半个下午发布了一个带有 S3 支持的新版。使用了 <a target="_blank" rel="noopener" href="https://github.com/andrewrk/node-s3-client">node-s3-client</a> 库，可以只上传修改了的文件。</p>
+<h2 id="搞定"><a href="#搞定" class="headerlink" title="搞定"></a>搞定</h2><p>一路搞下来，CloudFront 也就差不多了，域名解析应该也更新了。试试看效果吧~</p>
+<p>没啥访问量的个人站，用 Route53 + S3 + CloudFront 的开支一个月可以控制在 2 美元左右，但是性能、网络和可用性远远比一个月 2 美元的 VPS 好得多。</p>
+<p>然而在国内… AWS 被滥用还是挺凶的。所以各种服务被干扰，于是成了现在这惨样。</p>
+<p><del>其实还不如直接托管在 GitHub 然后上个支持自定义 SSL 和 PAYG 的 CDN</del></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2016/04/19/fingerprint-improves-your-security-zhuangbility/" class="prev">PREV</a><a href="/2015/12/29/archlinux-4g-lte-with-sierra-em7345/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2016/01/21/try-to-migrate-to-aws-cloud/';
+var disqus_title = '尝试迁移到 AWS Cloud';
+var disqus_url = 'https://blog.phoenixlzx.com/2016/01/21/try-to-migrate-to-aws-cloud/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

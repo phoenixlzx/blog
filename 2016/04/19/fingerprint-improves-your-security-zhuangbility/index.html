@@ -1,20 +1,29 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 公共场合请使用指纹识别器 · Phoenix's island</title><meta name="description" content="公共场合请使用指纹识别器 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">公共场合请使用指纹识别器</h1><div class="post-info">2016年4月19日</div><div class="post-content"><p>前几天带本本去导师办公室修改论文，虽然开机启动速度快，但是还是在老师的注视之下紧张敲错了三遍密码…得，本来没在意的也记住密码了(ry</p>
+<p>所以为啥有指纹识别器的本子偏偏要输密码<em>(:з」∠)</em></p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<h3 id="检查设备"><a href="#检查设备" class="headerlink" title="检查设备"></a>检查设备</h3><p>总之先来看下指纹识别器是哪家生产的好了。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Phoenix</span>-X<span class="number">1</span>-Carbon :: ~ » lsusb | grep -i &#x27;finger&#x27;</span><br><span class="line"><span class="attribute">Bus</span> <span class="number">001</span> Device <span class="number">003</span>: ID <span class="number">138</span>a:<span class="number">0017</span> Validity Sensors, Inc. Fingerprint Reader</span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>搜索一下就发现 X1 Carbon Gen3 这么受欢迎的本子早已上了 ArchWiki <a target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/Lenovo_ThinkPad_X1_Carbon_(Gen_3)">https://wiki.archlinux.org/index.php/Lenovo_ThinkPad_X1_Carbon_(Gen_3)</a></p>
+<h3 id="安装驱动"><a href="#安装驱动" class="headerlink" title="安装驱动"></a>安装驱动</h3><p>安装 <code>fprintd</code> 包，这个包会依赖 <code>libfprint</code>，但是官方仓库中的 <code>libfprint</code> 目前的版本在此指纹识别器上无法正常工作，表现为 enroll 只扫描一次，并且无法验证指纹。</p>
+<blockquote>
+<p>Note that recent versions of fprint are broken for this model : One is able to enroll a finger but recognition always fails.</p>
+</blockquote>
+<p>GitHub 上已经有了 <a target="_blank" rel="noopener" href="https://github.com/ars3niy/fprint_vfs5011/issues/9">vfs5011 相关的 issue 和 fix</a>，但是还没有发布新的稳定版。所以暂时安装 <a target="_blank" rel="noopener" href="https://aur.archlinux.org/packages/libfprint-git/">aur/libfprint-git</a> 包。</p>
+<h3 id="配置指纹验证"><a href="#配置指纹验证" class="headerlink" title="配置指纹验证"></a>配置指纹验证</h3><p><a target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/Fprint">Fprint - ArchWiki</a> 上已经给出了配置方法。将 <code>auth sufficient pam_fprintd.so</code> 加入 <code>/etc/pam.d/system-local-login</code> 中的第一位置即可。同样方法可以用于 <code>/etc/pam.d/</code> 下的其他文件。例如 KDE 登陆使用的 <code>sddm</code>。</p>
+<p>扫描指纹，以普通用户身份命令：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ </span>fprint-enroll</span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>默认是右手食指。可以使用 <code>-f</code> 选项指定手指。正常的表现为成功扫描五次即可保存指纹，并且在需要验证的时候自动启动指纹识别器。不过还有个小问题，如果保存多个指纹，似乎只能识别保存指纹列表中的第一个。</p>
+<p><del>然而我懒得折腾了就这样吧</del></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2016/04/27/better-dns-with-unbound/" class="prev">PREV</a><a href="/2016/01/21/try-to-migrate-to-aws-cloud/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2016/04/19/fingerprint-improves-your-security-zhuangbility/';
+var disqus_title = '公共场合请使用指纹识别器';
+var disqus_url = 'https://blog.phoenixlzx.com/2016/04/19/fingerprint-improves-your-security-zhuangbility/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

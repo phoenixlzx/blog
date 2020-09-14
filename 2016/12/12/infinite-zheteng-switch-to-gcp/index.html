@@ -1,20 +1,79 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 重新迁移回 GCP · Phoenix's island</title><meta name="description" content="重新迁移回 GCP - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">重新迁移回 GCP</h1><div class="post-info">2016年12月12日</div><div class="post-content"><p>忍得住打 Call，忍不住折腾。看到黑科技就手痒。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p><img src="/static/img/posts/2016-12-12-gcp.jpg" alt="Performance with GCP"></p>
+<p>虽然 AWS 用得挺安心不过越来越多的人向我抱怨博客打开速度很慢，想看文章都要等好久什么的。于是纠结了下，还是迁回了最贵但是最快的 Google Cloud Platform。这里记录一下调(zhe)教(teng)过程，毕竟 GCP 的 Cloud CDN 依然在 Alpha/Beta 阶段，可配置的选项实在太少而且很多 caveats。</p>
+<h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
+<li>域名</li>
+<li>SSL 证书</li>
+<li>网站程序或内容</li>
+</ul>
+<h3 id="创建实例"><a href="#创建实例" class="headerlink" title="创建实例"></a>创建实例</h3><p>我这样没什么访问量的静态网站用 <code>f1.micro</code> 就好啦~ 不过流量比较大的网站的话，还是建议选择高一些的配置和 SSD。</p>
+<p>然后创建一个实例组(instance group)，确保该实例组包含刚才创建的实例。</p>
+<h3 id="NGINX-配置"><a href="#NGINX-配置" class="headerlink" title="NGINX 配置"></a>NGINX 配置</h3><p>网站等会说。总之先配置好 SSL 和 Health Check。</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># mkdir -p <span class="regexp">/var/</span>www/hc</span><br><span class="line"># touch <span class="regexp">/var/</span>www<span class="regexp">/hc/i</span>ndex.html</span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>默认站点配置 <code>default.conf</code></p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">	<span class="attribute">listen</span> <span class="number">80</span>;</span><br><span class="line">	<span class="attribute">listen</span> [::]:<span class="number">80</span>;</span><br><span class="line">	<span class="attribute">server_name</span> hc; <span class="comment"># health check</span></span><br><span class="line">	<span class="attribute">root</span> /var/www/hc;</span><br><span class="line">	<span class="attribute">index</span> index.html;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">	<span class="attribute">listen</span> <span class="number">80</span> default_server;</span><br><span class="line">	<span class="attribute">listen</span> [::]:<span class="number">80</span> default_server;</span><br><span class="line">	<span class="attribute">server_name</span> _;</span><br><span class="line">	<span class="attribute">return</span> <span class="number">301</span> https://<span class="variable">$host</span><span class="variable">$request_uri</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>网站配置 <code>example.com.conf</code></p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">	<span class="attribute">listen</span> <span class="number">443</span> ssl http2; </span><br><span class="line">	<span class="attribute">listen</span> [::]:<span class="number">443</span> ssl http2;</span><br><span class="line">	<span class="attribute">server_name</span> example.com;</span><br><span class="line"></span><br><span class="line">	<span class="attribute">ssl</span> <span class="literal">on</span>;</span><br><span class="line">	<span class="attribute">ssl_certificate</span> /etc/ssl/private/example_com.pem;</span><br><span class="line">	<span class="attribute">ssl_certificate_key</span> /etc/ssl/private/example_com.key;</span><br><span class="line">	<span class="attribute">ssl_protocols</span> TLSv1 TLSv1.<span class="number">1</span> TLSv1.<span class="number">2</span>;</span><br><span class="line">	<span class="attribute">ssl_prefer_server_ciphers</span> <span class="literal">on</span>;</span><br><span class="line">	<span class="attribute">ssl_ciphers</span> <span class="string">&quot;EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4&quot;</span>;</span><br><span class="line">	<span class="attribute">keepalive_timeout</span>    <span class="number">70</span>;</span><br><span class="line">	<span class="attribute">ssl_session_cache</span>    shared:SSL:<span class="number">10m</span>;</span><br><span class="line">	<span class="attribute">ssl_session_timeout</span>  <span class="number">10m</span>;</span><br><span class="line">	<span class="attribute">ssl_dhparam</span> /etc/ssl/certs/dhparam.pem;</span><br><span class="line"></span><br><span class="line">	<span class="attribute">add_header</span> Strict-Transport-Security max-age=<span class="number">63072000</span>;</span><br><span class="line">	<span class="attribute">add_header</span> X-Frame-Options SAMEORIGIN;</span><br><span class="line">	<span class="attribute">add_header</span> X-Content-Type-Options nosniff;</span><br><span class="line"></span><br><span class="line">	<span class="attribute">root</span> /var/www/example.com;</span><br><span class="line">	<span class="attribute">location</span> / &#123;</span><br><span class="line">		<span class="comment"># ...</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>(SSL 相关的很多配置步骤省略，请自行查阅其他文档)</p>
+<h3 id="创建负载均衡器"><a href="#创建负载均衡器" class="headerlink" title="创建负载均衡器"></a>创建负载均衡器</h3><p>戳到 Networking 标签，选择 <code>Load balancing</code> 然后创建一个 <code>HTTP(S) Load Balancing</code>。首先为负载均衡器命名，因为要分别创建 2 个负载均衡所以这里可以写例如 <code>website-http</code> 之类作为区分。配置页面的三个标签：</p>
+<ul>
+<li>backend<ul>
+<li>创建一个新的 backend</li>
+<li>backend service 选择 http</li>
+<li>instance group 选择刚才创建的实例组</li>
+<li>port numbers 80</li>
+<li>health check 创建新的 health check 并设置 custom header，和之前 NGINX 里的配置一致，这里是 <code>hc</code></li>
+<li>勾选 Enable Cloud CDN</li>
+</ul>
+</li>
+<li>Host and path rules<ul>
+<li>添加域名对应的 <code>/</code> 和 <code>/*</code> 两个路径规则。如果有特殊需求则另外添加。</li>
+</ul>
+</li>
+<li>Frontend configuration<ul>
+<li>Protocol 选择 HTTP</li>
+<li>Create IP Address 然后 reserve 一个 IP</li>
+</ul>
+</li>
+</ul>
+<p>第二个负载均衡器用于 HTTPS，名称可以是 <code>website-https</code> 这样。配置：</p>
+<ul>
+<li>backend<ul>
+<li>因为配置不一样，所以要再创建一个新的 backend</li>
+<li>backend service 选择 https (要点 Edit)</li>
+<li>instance group 选择刚才创建的同一个实例组</li>
+<li>port numbers 443</li>
+<li>health check 创建新的 health check 并设置协议为 https，custom header 为网站域名（因为要和 SSL 证书相符，示例里是 <code>example.com</code>）</li>
+<li>勾选 Enable Cloud CDN</li>
+</ul>
+</li>
+<li>Host and path rules<ul>
+<li>同上</li>
+</ul>
+</li>
+<li>Frontend configration<ul>
+<li>Protocol 选择 HTTPS</li>
+<li>IP 选择刚才 reserve 的 IP</li>
+<li>创建证书，分别上传签发的证书、CA 证书链和私钥</li>
+</ul>
+</li>
+</ul>
+<h3 id="更新解析-amp-收尾"><a href="#更新解析-amp-收尾" class="headerlink" title="更新解析&amp;收尾"></a>更新解析&amp;收尾</h3><p>将域名的 DNS 解析到刚才 reserve 的 IP 即可。</p>
+<p>至此就是基本的（当前版本的）Google Cloud CDN 配置步骤。还有很多可以自定义和扩展、优化的空间，但是这些需要根据特定的需求变化因此不再详细记录。</p>
+<p>以及，不要忘记在虚拟机里把网站跑起来~</p>
+<p>最后，南酱的 live 超棒(๑•̀ㅂ•́)و✧</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2017/02/08/play-with-nginx-realip-module/" class="prev">PREV</a><a href="/2016/09/07/powerdns-admin-replacing-moedns/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2016/12/12/infinite-zheteng-switch-to-gcp/';
+var disqus_title = '重新迁移回 GCP';
+var disqus_url = 'https://blog.phoenixlzx.com/2016/12/12/infinite-zheteng-switch-to-gcp/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

@@ -1,20 +1,54 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> NetFLOW / sFLOW 流量报告：FastNetMon + InfluxDB + Grafana · Phoenix's island</title><meta name="description" content="NetFLOW / sFLOW 流量报告：FastNetMon + InfluxDB + Grafana - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">NetFLOW / sFLOW 流量报告：FastNetMon + InfluxDB + Grafana</h1><div class="post-info">2017年6月6日</div><div class="post-content"><p>最近稍微有点时间折腾了下 Cisco 的三层交换，尝试搭建了一套数据中心用的流量统计/监控/报告系统。过程不是很复杂，但是也只算利用了一套高级软件组合的一点点功能。之后打算继续研究更多的功能实现，不过也要看有没有时间了…</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>首先确认出口路由设备支持 netflow/sflow 的对应版本。一般 Cisco 的路由器或者三层交换都是支持的。</p>
+<p>然后准备一个常见的 Linux 系统，虚拟机或者物理机都可以。</p>
+<p>出口路由设备能够连通到该 Linux 系统，并且 flow collector 设置到该 Linux 系统的 IP 地址和对应端口。</p>
+<h2 id="FastNetMon"><a href="#FastNetMon" class="headerlink" title="FastNetMon"></a>FastNetMon</h2><p><a target="_blank" rel="noopener" href="https://fastnetmon.com/install/">安装</a> fastnetmon，只需要一条简单的脚本命令。</p>
+<p>然后将所有要监控的网段加入 <code>/etc/networks_list</code>。一行一个，例如：</p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">10.1.0.0</span>/<span class="number">16</span></span><br><span class="line"><span class="number">192.168.254.0</span>/<span class="number">24</span></span><br><span class="line"><span class="number">8.8.0.0</span>/<span class="number">16</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>按照安装文档打开两个终端，分别启动主进程和客户端</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">/opt/</span>fastnetmon/fastnetmon</span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">/opt/</span>fastnetmon/fastnetmon_client</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
+<p>如果没有问题，应该在客户端上可以看到收到的 flow 数据。</p>
+<p>先关闭 fastnetmon 进程，修改配置文件打开 Graphite 支持：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">graphite</span> = <span class="literal">on</span></span><br><span class="line"><span class="attr">graphite_host</span> = <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">graphite_port</span> = <span class="number">2003</span></span><br><span class="line"><span class="attr">graphite_prefix</span> = fastnetmon</span><br></pre></td></tr></table></figure>
 
-block copyright
-    include partial/copyright
+<p>=== 2018-07-26 更新 ===</p>
+<p>如果有比较新的发行版（内核 &gt;= 3.6）可以开启 <code>AF_PACKET</code>，安装并启动 <code>irqbalance</code> 来获得更好的抓包性能。</p>
+<h2 id="InfluxDB"><a href="#InfluxDB" class="headerlink" title="InfluxDB"></a>InfluxDB</h2><p><a target="_blank" rel="noopener" href="https://portal.influxdata.com/downloads">安装</a> InfluxDB，官方提供了各种包管理器的安装方式。</p>
+<p>配置文件一般位于 <code>/etc/influxdb/influxdb.conf</code>，需要根据环境做安全相关设置（侦听地址、端口、鉴权、etc）并打开 Graphite Simulation</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[graphite]]</span></span><br><span class="line">  <span class="attr">enabled</span> = <span class="literal">true</span></span><br><span class="line">  <span class="attr">bind-address</span> = <span class="string">&quot;127.0.0.1:2003&quot;</span></span><br><span class="line">  <span class="attr">database</span> = <span class="string">&quot;flow_dc1&quot;</span></span><br><span class="line">  <span class="attr">protocol</span> = <span class="string">&quot;tcp&quot;</span></span><br><span class="line">  <span class="attr">consistency-level</span> = <span class="string">&quot;one&quot;</span></span><br><span class="line">  <span class="attr">name-separator</span> = <span class="string">&quot;.&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># batch-size / batch-timeout requires InfluxDB &gt;= 0.9.3</span></span><br><span class="line">  <span class="attr">batch-size</span> = <span class="number">5000</span> <span class="comment"># will flush if this many points get buffered</span></span><br><span class="line">  <span class="attr">batch-timeout</span> = <span class="string">&quot;1s&quot;</span> <span class="comment"># will flush at least this often even if we haven&#x27;t hit buffer limit</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">templates</span> = [</span><br><span class="line">    <span class="string">&quot;fastnetmon.hosts.* app.measurement.cidr.direction.function.resource&quot;</span>,</span><br><span class="line">    <span class="string">&quot;fastnetmon.networks.* app.measurement.cidr.direction.resource&quot;</span>,</span><br><span class="line">    <span class="string">&quot;fastnetmon.total.* app.measurement.direction.resource&quot;</span></span><br><span class="line">  ]</span><br></pre></td></tr></table></figure>
+
+<p>顺序重启 InfluxDB 和 fastnetmon。检查 flow 数据是否记录到 InfluxDB:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ influx</span><br><span class="line">Connected <span class="keyword">to</span> http://localhost:<span class="number">8086</span> <span class="keyword">version</span> <span class="number">1.2</span><span class="number">.4</span></span><br><span class="line">InfluxDB shell <span class="keyword">version</span>: <span class="number">1.2</span><span class="number">.4</span></span><br><span class="line">&gt; use flow_dc1</span><br><span class="line"><span class="keyword">Using</span> <span class="keyword">database</span> flow_dc1</span><br><span class="line">&gt; <span class="keyword">select</span> mean(<span class="keyword">value</span>) <span class="keyword">from</span> networks <span class="keyword">where</span> direction = <span class="string">&#x27;incoming&#x27;</span> <span class="keyword">and</span> resource = <span class="string">&#x27;bps&#x27;</span> <span class="keyword">group</span> <span class="keyword">by</span> *</span><br><span class="line"><span class="type">name</span>: networks</span><br><span class="line">tags: app=fastnetmon, <span class="type">cidr</span>=<span class="number">10</span>_1_0_0_24, direction=incoming, resource=bps</span><br><span class="line"><span class="type">time</span> mean</span><br><span class="line"><span class="comment">---- ----</span></span><br><span class="line"><span class="number">0</span>    <span class="number">4735.049632696411</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a>Grafana</h2><p>Grafana 是一款非常强大且易用的数据可视化工具。<a target="_blank" rel="noopener" href="https://grafana.com/grafana/download">安装</a> Grafana 然后修改配置文件的必要部分，配置文件一般位于 <code>/etc/grafana/grafana.ini</code>。</p>
+<p>完成后重启 Grafana，将浏览器指向 Grafana 的 HTTP 服务器地址即可看到登录界面。如果内部使用的话，建议关闭匿名访问和注册功能。</p>
+<p>使用默认的 <code>admin</code> / <code>admin</code> 登录，按照引导完成配置、添加数据源（Data source），数据源即是 InfluxDB 的 HTTP API 地址。如果 Grafana 中限制了数据源白名单，需要将 InfluxDB 的 HTTP API 地址和端口加到白名单里。</p>
+<p>添加面板、Graph，在 Graph 编辑模式里写入类似这样的查询语句：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT mean(<span class="string">&quot;value&quot;</span>) <span class="keyword">FROM</span> <span class="string">&quot;networks&quot;</span> WHERE <span class="string">&quot;direction&quot;</span> = <span class="string">&#x27;incoming&#x27;</span> <span class="keyword">AND</span> <span class="string">&quot;resource&quot;</span> = <span class="string">&#x27;bps&#x27;</span> <span class="keyword">AND</span> <span class="string">&quot;cidr&quot;</span> =~ /^10_1_0_0_16/ <span class="keyword">AND</span> <span class="variable">$timeFilter</span><span class="built_in"> GROUP </span>BY time(<span class="variable">$interval</span>) fill(previous)</span><br></pre></td></tr></table></figure>
+
+<p>即可看到有图表出现。根据需求完善查询语句和图表配置即可简单实现各种可视化效果。例如流量和数据包的实时报告：</p>
+<p><img src="/static/img/posts/2017-06-06-grafana-1.jpg" alt="Traffic Graph"></p>
+<p><img src="/static/img/posts/2017-06-06-grafana-2.jpg" alt="PPS Graph"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过配合 FastNetMon，InfluxDB 和 Grafana 即可快速实现一套基于 NetFLOW / sFLOW 的流量统计报告系统。但是 FastNetMon 的功能远不止流量统计，Grafana 也有大量插件和灵活的用法可以满足更多需求。如果配置合理，此方案也可适用于 40Gbps+ 接入的中型数据中心且成本低廉。以及——</p>
+<ol>
+<li>InfluxDB 真的很快！</li>
+<li>Grafana 的图表真的很省资源！</li>
+<li>Chronograph 卡死了我的浏览器！（i7-7700K / Chrome）</li>
+</ol>
+<p><del>以及一大早手工修好了 K812 的耳机线，省掉了 2 万日元的线材费用非常开心</del></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2017/12/18/minecraft-3d-render-with-blender/" class="prev">PREV</a><a href="/2017/05/13/recover-netgear-nighthawk-x6-with-tftp/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2017/06/06/netflow-sflow-graph-fastnetmon-influxdb-grafana/';
+var disqus_title = 'NetFLOW / sFLOW 流量报告：FastNetMon + InfluxDB + Grafana';
+var disqus_url = 'https://blog.phoenixlzx.com/2017/06/06/netflow-sflow-graph-fastnetmon-influxdb-grafana/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

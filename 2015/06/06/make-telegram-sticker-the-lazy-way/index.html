@@ -1,20 +1,36 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 懒(烂)办法制作 Telegram Sticker Pack · Phoenix's island</title><meta name="description" content="懒(烂)办法制作 Telegram Sticker Pack - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">懒(烂)办法制作 Telegram Sticker Pack</h1><div class="post-info">2015年6月6日</div><div class="post-content"><p><a target="_blank" rel="noopener" href="https://telegram.org/">Telegram</a> 支持表情包 (Stickers Pack) 之后各个群里就开始出现各种奇怪的聊天表情。嘛，虽然有些做得不错但是终究是别人分享的，自己有很多好看的表情图片就不便使用了。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>所以今天折腾了下，用现成的图片集来制作 stickers pack。本文使用的 <code>sips</code> 命令内置于 OS X 操作系统，Linux 则可以更方便地使用 ImageMagick 来操作。</p>
+<p>Telegram 要求 Sticker 图片为 PNG 格式，并且要有透明层，至少一边为 512 像素，另一边则不超过 512 像素。最大文件大小为 350KB。透明层就算了，我不会玩 PS。那么直接偷懒(死)来批量把当前目录下 JPG 和 PNG 混杂的图片们统一转换为 PNG 好了。</p>
+<p>命令：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建 output 目录以存放输出图片...</span></span><br><span class="line"><span class="attribute">mkdir</span> -p output</span><br><span class="line"><span class="comment"># 把当前目录下的所有 JPG 文件转换为 PNG 丢进 output 目录里。</span></span><br><span class="line">for i in *.jpg; do sips -s format png $i --out output/$i.png;done</span><br><span class="line"><span class="comment"># 把剩下的 PNG 图片丢进 output 准备下一步的批量操作以及简单清理... 没有的话可以跳过。</span></span><br><span class="line"><span class="attribute">mv</span> <span class="regexp">*.png</span> output/ &amp;&amp; rm <span class="regexp">*.jpg</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>接下来把所有图片缩放为宽或高最大为 512 像素，并且保持比例。</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cd</span> output</span><br><span class="line">sips -Z 512 *<span class="string">.png</span></span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>搞定。最后一步就是添加 Stickers Pack。需要敲<a target="_blank" rel="noopener" href="https://telegram.me/stickers">这位机器人</a>。</p>
+<p>几条命令发给 stickers bot：</p>
+<ol>
+<li><code>/newstickerpack</code></li>
+<li>发送表情包的名字…</li>
+<li>在内置的 emoji 中发送一个最符合你要发送图片的表情…</li>
+<li>然后把对应的图片<strong>作为文件</strong>发送</li>
+<li>如果还有其他图片的话重复 3-4</li>
+<li>全部表情图片设置完毕，发送 <code>/publish</code> 命令</li>
+<li>为你的 stickers pack 取一个短名字 (用于 URL)</li>
+</ol>
+<p>KABOOM! 新的 Stickers Pack 制作完成~ 快拿链接去和大家分享吧~</p>
+<p>最后贴我的<a target="_blank" rel="noopener" href="https://telegram.me/addstickers/flandre">芙兰酱的表情包</a><br>这些图片木有高清的所以如果谁能做一份高清的表情来请务必告诉我_(:3」</p>
+<p>=== 2015.06.07 更新 ===</p>
+<p><a target="_blank" rel="noopener" href="https://plus.google.com/+MikaAsagi/posts/2B37DdX1wwt">Mika 菊苣</a>制作了一份<a target="_blank" rel="noopener" href="https://telegram.me/addstickers/FlandreSticker">芙兰酱的高清表情包</a></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2015/09/14/ipsec-plus-tunnel-chnroutes-notes/" class="prev">PREV</a><a href="/2015/02/08/kancolle-broker/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2015/06/06/make-telegram-sticker-the-lazy-way/';
+var disqus_title = '懒(烂)办法制作 Telegram Sticker Pack';
+var disqus_url = 'https://blog.phoenixlzx.com/2015/06/06/make-telegram-sticker-the-lazy-way/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

@@ -1,20 +1,27 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 不作死就不会死系列，TFTP 修复变砖的 Nighthawk X6 · Phoenix's island</title><meta name="description" content="不作死就不会死系列，TFTP 修复变砖的 Nighthawk X6 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">不作死就不会死系列，TFTP 修复变砖的 Nighthawk X6</h1><div class="post-info">2017年5月13日</div><div class="post-content"><p>由于之前买的 AC87U 经常被 roommate 抱怨掉线（风评表示这货 5G 有问题，然而我连着 5G 毛事儿没有，隔壁用 2.4G 却一直掉线）…</p>
+<p>新购入的路由器是 Netgear Nighthawk X6 R8000。</p>
+<p>由于之前的 Security Advisory，所以到手第一件事就是配上网络更新固件啦。更新挺慢的于是点点点完事儿撸猫去了。过了一会儿回来一看怎么还没网络？得，砖了…</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>讲道理，Netgear 也算大厂了，这种 online update 干了不知道多少回，第一次遇到这都能变砖的（扶额。</p>
+<p>现象就是电源橙色灯亮后一会儿变成白色灯闪烁，且网络服务没有启动。尝试过 factory reset 无效，官方提供的 TFTP 强刷工具也无效（刷不进…</p>
+<p><a target="_blank" rel="noopener" href="https://community.netgear.com/t5/Nighthawk-WiFi-Routers/SOLVED-Steps-for-debrick-unresponsive-R7000-softbricked/td-p/414034">解决方案</a>反而是意想不到的简单。总之大概记录下修复的过程。</p>
+<ol>
+<li>从<a target="_blank" rel="noopener" href="https://www.netgear.com/support/">官方网站</a>下载适用的新版固件并解压，应该得到一个 .chk 文件</li>
+<li>关闭路由器电源等待 10 秒，网线插 LAN 口开机。</li>
+<li>检查是否获得了正确的 IP。如果没有，可能 DHCP 服务没起来。手动设置一个正确的 IP 吧。然后能 ping 通路由器 IP 即可。</li>
+<li>电源灯开始闪烁的时候，执行命令 <code>tftp -i [router ip] put [path/to/firmware.chk]</code>。例如 <code>tftp -i 192.168.1.1 put ./R8000-V1.0.3.36_1.1.25.chk</code></li>
+<li>等一会儿路由器自动重启，搞定。</li>
+</ol>
+<p>配置都没丢…然后我依旧没有搞定 OCN 要怎么连 IPv6… 说好的 IPv6 PPPoE 呢…</p>
+<p><img src="/static/img/posts/2017-05-13-sticker.jpg" alt="心累.png"></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2017/06/06/netflow-sflow-graph-fastnetmon-influxdb-grafana/" class="prev">PREV</a><a href="/2017/05/05/reduce-minecraft-server-lag-without-limit-mob-amount/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2017/05/13/recover-netgear-nighthawk-x6-with-tftp/';
+var disqus_title = '不作死就不会死系列，TFTP 修复变砖的 Nighthawk X6';
+var disqus_url = 'https://blog.phoenixlzx.com/2017/05/13/recover-netgear-nighthawk-x6-with-tftp/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

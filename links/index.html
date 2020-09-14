@@ -1,20 +1,52 @@
-extends partial/layout
-
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> Links · Phoenix's island</title><meta name="description" content="Links - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">Links</h1><div class="post-info">2014年1月29日</div><div class="post-content"><p>这里是我的小伙伴们。因为有很多单向链接所以并不能算是友链表，但是既然是个列出菊苣们的地方，自然是要放在显眼的位置的对吧。</p>
+<p>链接不分先后。由于我并不经常维护这里，所以有忘记添加、链接更换等等情况请单独戳我更新一下。</p>
+<ul>
+<li>仙子酱 <a target="_blank" rel="noopener" href="http://lilydjwg.is-programmer.com/">依云’s blog</a></li>
+<li>猫菊苣的<a target="_blank" rel="noopener" href="http://blog.felixc.at/">Felix’s blog</a>以及<a target="_blank" rel="noopener" href="http://felixc.at/">FelixWiki</a></li>
+<li>Bob酱 <a target="_blank" rel="noopener" href="http://nya.io/">nyasoft</a></li>
+<li>秋水学姐 <a target="_blank" rel="noopener" href="http://blog.icehoney.me/">Icehoney!</a></li>
+<li>Cherrot的<a target="_blank" rel="noopener" href="http://www.cherrot.com/">博客</a></li>
+<li>肉棒君的<a target="_blank" rel="noopener" href="http://brilliant.run/">Brilliant</a></li>
+<li>Reverland前辈的<a target="_blank" rel="noopener" href="http://reverland.org/">知行阁</a></li>
+<li>Martian 菊苣的<a target="_blank" rel="noopener" href="http://martianz.cn/">MartianZ!</a></li>
+<li>紫川兄 <a target="_blank" rel="noopener" href="http://www.clyce.net/">epi.clyce</a></li>
+<li>二小姐 <a target="_blank" rel="noopener" href="http://kouga.us/">Kouga’s personal blog</a></li>
+<li>Aveline 菊苣的 <a target="_blank" rel="noopener" href="http://blog.swan.im/">Silent Forest</a></li>
+<li>wych前辈 <a target="_blank" rel="noopener" href="http://blog.gsdme.com/">wych’s blog</a></li>
+<li>alswl前辈 <a target="_blank" rel="noopener" href="http://blog.log4d.com/">Log4D</a></li>
+<li>可乐酱 <a target="_blank" rel="noopener" href="http://blog.michiru.me/">Kele.blog()</a></li>
+<li>lainme <a target="_blank" rel="noopener" href="http://lainme.com/">Lainme’s Blog</a></li>
+<li><a target="_blank" rel="noopener" href="http://tengattack.com/">腾壕</a></li>
+<li>董狗蛋 <a target="_blank" rel="noopener" href="http://dc-fpml.org/">neutronest</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.cee.moe/">Cee菊苣的中二窝</a></li>
+<li>John Xi <a target="_blank" rel="noopener" href="http://www.xiganglive.com/">蓝骑士随意录</a></li>
+<li>钉子菊苣 <a target="_blank" rel="noopener" href="http://blog.dimpurr.com/">钉子の次元</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.kochiya.me/">Sanaeの空想庭园</a></li>
+<li><a target="_blank" rel="noopener" href="http://ricterz.me/">Ricter 大大大大大大大大大大大大菊苣 OAQ</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.kiseki.moe/">受皇の軌跡</a>(｢･ω･)｢</li>
+<li><a target="_blank" rel="noopener" href="http://blog.andyxu.me/">神岸あかりのベクトル空間</a></li>
+<li><a target="_blank" rel="noopener" href="http://kunr.me/">Kunr</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ooxx.dk/">OX</a>大菊苣！</li>
+<li><a target="_blank" rel="noopener" href="http://www.thrfouree.com/">神楽坂バカ</a></li>
+<li><a target="_blank" rel="noopener" href="http://tomomi.moe/">杏子酱</a></li>
+<li>Miz 酱 <a target="_blank" rel="noopener" href="http://miz.audio/">Miz’ Reso</a></li>
+<li><a target="_blank" rel="noopener" href="http://yaqinking.github.io/">小笠原 やきん のメモ帳</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.shiniv.com/">Shiniv</a></li>
+<li><a target="_blank" rel="noopener" href="https://jk.gy/">Haku!</a></li>
+<li>超萌的<a target="_blank" rel="noopener" href="http://kujourin.com/">九条凛</a></li>
+<li>木菟 佐蔵 <a target="_blank" rel="noopener" href="https://tuxzz.org/">TuxZZ</a></li>
+<li><a target="_blank" rel="noopener" href="https://banana.moe/">羽喵羽喵</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.a0z.me/">傻齐鹏~</a></li>
+<li><a target="_blank" rel="noopener" href="http://xiyuan.lu/">陆西园</a></li>
+<li>Showfom’s <a target="_blank" rel="noopener" href="https://sb.sb/">烧饼博客</a></li>
+</ul>
+</div></article></div></section><footer><div class="paginator"></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = 'links/index.html';
+var disqus_title = 'Links';
+var disqus_url = 'https://blog.phoenixlzx.com/links/index.html';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

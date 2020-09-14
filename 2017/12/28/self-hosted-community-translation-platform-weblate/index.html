@@ -1,20 +1,78 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 自托管的在线协作翻译平台 Weblate · Phoenix's island</title><meta name="description" content="自托管的在线协作翻译平台 Weblate - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">自托管的在线协作翻译平台 Weblate</h1><div class="post-info">2017年12月28日</div><div class="post-content"><p>起因：Transifex 这货闭源一段时间后突然开始抢钱了。</p>
+<p>正巧一堆开源项目需要一个在线协作的翻译平台，于是测试了几个比较知名的开源程序。一遍折腾下来，发现 <a target="_blank" rel="noopener" href="https://weblate.org/">Weblate</a> 可以最大化满足要求。顺便提一句，Weblate 也是有 hosted 付费服务的，但是在预算内的源字符串等限制依旧太多，所以选择使用他们的源码来搭建一套。</p>
+<p>以及：我讨厌 Docker。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p><a target="_blank" rel="noopener" href="https://docs.weblate.org/en/latest/">Weblate 文档</a> 提供了非常全面的从起步到上手到各种高级用法的指南，因此这里不多赘述安装的过程。只记录少许踩过的坑。</p>
+<p>这套程序看似简单，但实际上是基于 Django、使用了一大堆组件的复杂程序。如果想保持 system clean，最好（最快）的办法还是使用 Docker。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>小型实例只需要一台虚拟机即可。但是即便只托管几个项目，它依旧会吃掉 2 个 CPU 核心和 4GB 内存，和曾经开源版的 Transifex 有得一拼 <del>大概也解释了为何这类服务都死贵</del>。</p>
+<p>如果是托管在公网上的实例，则推荐使用 HTTPS。Weblate 的 Docker compose 提供了 HTTPS 支持，稍后会提到。</p>
+<p>安装 Git, Docker 和 docker compose，在一些软件仓库中一般是 <code>docker-ce</code> 和 <code>docker-compose</code>，其他软件均不需要手动安装。</p>
+<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><p>首先克隆 docker compose 配置到本地</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https:<span class="regexp">//gi</span>thub.com<span class="regexp">/WeblateOrg/</span>docker.git weblate-docker</span><br><span class="line">cd weblate-docker</span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>为了直接开始使用 HTTPS，现在需要先建立域名解析记录，将要使用的域名(例如 <code>weblate.example.com</code>)指向服务器 IP。然后在该目录下创建配置文件 <code>docker-compose-https.override.yml</code> 内容如下</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">version: <span class="string">&#x27;2&#x27;</span></span><br><span class="line">services:</span><br><span class="line">  weblate:</span><br><span class="line">    environment:</span><br><span class="line">      - <span class="attribute">WEBLATE_DEBUG</span>=0</span><br><span class="line">      - <span class="attribute">WEBLATE_EMAIL_HOST</span>=smtp.gmail.com</span><br><span class="line">      - <span class="attribute">WEBLATE_EMAIL_HOST_USER</span>=noreply@weblate.org</span><br><span class="line">      - <span class="attribute">WEBLATE_EMAIL_HOST_PASSWORD</span>=system.email.password.here</span><br><span class="line">      - <span class="attribute">WEBLATE_ALLOWED_HOSTS</span>=weblate.example.com</span><br><span class="line">      - <span class="attribute">WEBLATE_SERVER_EMAIL</span>=noreply@weblate.org</span><br><span class="line">      - <span class="attribute">DEFAULT_FROM_EMAIL</span>=noreply@weblate.org</span><br><span class="line">      - <span class="attribute">WEBLATE_REGISTRATION_OPEN</span>=0</span><br><span class="line">      - <span class="attribute">WEBLATE_TIME_ZONE</span>=UTC</span><br><span class="line">      - <span class="attribute">WEBLATE_OFFLOAD_INDEXING</span>=1</span><br><span class="line">      - <span class="attribute">WEBLATE_REQUIRE_LOGIN</span>=1</span><br><span class="line">	  - <span class="attribute">WEBLATE_ADMIN_NAME</span>=Weblate Admin</span><br><span class="line">	  - <span class="attribute">WEBLATE_ADMIN_EMAIL</span>=admin@weblate.org</span><br><span class="line">	  - <span class="attribute">WEBLATE_ADMIN_PASSWORD</span>=your+initial+password</span><br><span class="line">  https-portal:</span><br><span class="line">    environment:</span><br><span class="line">      DOMAINS: <span class="string">&#x27;weblate.example.com -&gt; http://weblate&#x27;</span></span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>这份配置文件指定了：</p>
+<ul>
+<li>关闭 Django DEBUG mode (即生产模式)</li>
+<li>系统外发邮件服务器 <code>smtp.gmail.com</code></li>
+<li>系统外发邮件用户名 <code>noreply@weblate.org</code></li>
+<li>系统外发邮件密码 <code>system.email.password.here</code></li>
+<li>允许使用的域名 <code>weblate.example.com</code>，如果有多个域名，使用逗号隔开</li>
+<li>系统外发邮件地址 <code>noreply@weblate.org</code></li>
+<li>关闭注册通道，用户必须管理员手动添加</li>
+<li>设置系统时间为 UTC</li>
+<li>打开后台索引，降低运行时的负载</li>
+<li>执行任何操作前要求登陆</li>
+<li>默认管理员名称是 <code>Weblate Admin</code></li>
+<li>默认管理员邮箱地址是 <code>admin@weblate.org</code></li>
+<li>默认管理员密码是 <code>your+initial+password</code></li>
+</ul>
+<p>然后在 https-portal 容器中指定了要使用 SSL 的域名 <code>weblate.example.com</code> 和后端指向的容器 <code>http://weblate</code>。</p>
+<p>在当前目录中执行</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">docker-compose</span> <span class="selector-tag">-f</span> <span class="selector-tag">docker-compose-https</span><span class="selector-class">.yml</span> <span class="selector-tag">-f</span> <span class="selector-tag">docker-compose-https</span><span class="selector-class">.override</span><span class="selector-class">.yml</span> <span class="selector-tag">up</span></span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>会顺序拉取、启动 4 个 docker 容器，分别是：</p>
+<ul>
+<li>https-portal</li>
+<li>weblate</li>
+<li>postgresql</li>
+<li>memcached</li>
+</ul>
+<p>第一次启动需要一些时间拉取镜像并导入初始数据。全部完成后，访问 <code>weblate.example.com</code> 应该可以看到一个 HTTPS 的 Weblate 实例运行，使用之前定义的默认管理员邮箱地址和密码即可登入。</p>
+<p>此时转回终端，按<strong>一次</strong> <code>^C</code> 等待四个容器正确关闭，然后编辑 <code>docker-compose-https.override.yml</code>，删除以下配置</p>
+<ul>
+<li><code>WEBLATE_ADMIN_NAME</code></li>
+<li><code>WEBLATE_ADMIN_EMAIL</code></li>
+<li><code>WEBLATE_ADMIN_PASSWORD</code></li>
+</ul>
+<p>否则，如果更改了默认管理员的信息（如用户名等）下次启动会再次创建管理员帐号，并使用相同的邮箱，导致默认管理员无法使用邮箱登陆（报错返回 2 个用户信息）。解决办法是使用用户名…（摔</p>
+<h2 id="集成配置"><a href="#集成配置" class="headerlink" title="集成配置"></a>集成配置</h2><p>再次运行 <code>docker-compose -f docker-compose-https.yml -f docker-compose-https.override.yml up</code> 后可以很快启动所有需要的程序。此时登入 Weblate 实例，指向 <code>/admin/ssh/</code> 点击创建 SSH 密钥。</p>
+<p>在对单一 repo 提交的情况下，此 SSH Key 可作为 GitHub deploy key，但是如果需要多个不同 repo 提交时，有两种方法：</p>
+<ul>
+<li>创建一个 GitHub 用户，然后将此 SSH Key 添加到此用户下，再给此用户所有必要的写权限</li>
+<li>使用 Access Token 作为 HTTPS 密码访问必要的 repo</li>
+</ul>
+<p>浏览器指向 <code>/admin/trans/project/</code> 新建一个 Project。这个 Project 不仅指一个项目，也可以作为一个 Organization 的存在，更精确的解释是一个软件集，例如 KDE 套件可以包含一大堆的组件。</p>
+<p><img src="/static/img/posts/weblate-1-20171228.jpg" alt="Weblate Project"></p>
+<p>指向 <code>/admin/trans/subproject/</code> 这里才是可以添加要翻译的项目的地方。如果对应的 repo 添加了公钥，这里可以直接使用 SSH 方式的 push URL。</p>
+<p><img src="/static/img/posts/weblate-3-20171228.jpg" alt="Weblate Import strings"></p>
+<p><code>File mask</code> 填写<strong>所有</strong>语言文件相对 repo root 的路径，使用 <code>*</code> 代替语言代号。如果是 Monolingual language file，例如 key 是 <code>user.info.comment_posted</code> 这样而非原本即可阅读的文本，则 <code>Monolingual base language file</code> 和 <code>Base file for new translations</code> 均为源语言文件相对 repo root 的路径，这样即可正确识别源语言的字符串<del>不至于让别人拿着 <code>comment_posted</code> 这样的 key 来猜意思</del></p>
+<p><img src="/static/img/posts/weblate-2-20171228.jpg" alt="Weblate Translation Interface"></p>
+<h2 id="持续集成"><a href="#持续集成" class="headerlink" title="持续集成"></a>持续集成</h2><p>提交翻译后，Weblate 会在后台完成索引并提交必要的更改。当然也会一不小心刷了别人的屏…</p>
+<p><img src="/static/img/posts/weblate-4-20171228.jpg" alt="Weblate continous translation"></p>
+<p>在 repo 的 settings -&gt; integration 中可以添加 Weblate 作为集成，每次有新的提交即可触发 Weblate 更新源语言文件。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>我很开心可以<a target="_blank" rel="noopener" href="https://www.transifex.com/pricing/">省下每年数千美元来用一个非常卡的在线协作翻译平台</a>。</p>
+<p>当然，我依旧讨厌 Docker。</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2018/02/01/build-archlinux-image-template-for-aliyun/" class="prev">PREV</a><a href="/2017/12/18/minecraft-3d-render-with-blender/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2017/12/28/self-hosted-community-translation-platform-weblate/';
+var disqus_title = '自托管的在线协作翻译平台 Weblate';
+var disqus_url = 'https://blog.phoenixlzx.com/2017/12/28/self-hosted-community-translation-platform-weblate/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

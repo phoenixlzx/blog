@@ -1,20 +1,28 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 为国内用户加速 Apple 服务 · Phoenix's island</title><meta name="description" content="为国内用户加速 Apple 服务 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">为国内用户加速 Apple 服务</h1><div class="post-info">2014年5月15日</div><div class="post-content"><p>偶然看到<a target="_blank" rel="noopener" href="https://plus.google.com/105938465531761409080/posts/3EXLAUerxMD">雅诗的po</a> 才发觉自己 DNS 的 Apple 服务加速已经几乎不能用了，速度非常慢。倒是挺奇怪的，因为自己做的 DNS 服务器对于整个 Apple 域的上游都是 V2EX DNS，难道是 V2EX DNS 出问题了？</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>总之先不管那些。现在来简单做一份 Apple 服务加速的配置。</p>
+<p>稍微 Google 下 Apple 的服务地址，目前获得的地址如下：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a&#123;<span class="number">1</span>-<span class="number">2000</span>&#125;<span class="selector-class">.phobos</span><span class="selector-class">.apple</span>.com</span><br><span class="line">swdist<span class="selector-class">.apple</span>.com</span><br><span class="line">itunes<span class="selector-class">.apple</span>.com</span><br><span class="line">contentdelivery<span class="selector-class">.itunes</span><span class="selector-class">.apple</span>.com</span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>对应在国内的 CDN 地址是</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">a1-a200</span><span class="selector-class">.phobos</span><span class="selector-class">.apple</span><span class="selector-class">.chinacache</span><span class="selector-class">.net</span></span><br><span class="line"><span class="selector-tag">swdist</span><span class="selector-class">.apple</span><span class="selector-class">.ccgslb</span><span class="selector-class">.net</span></span><br><span class="line"><span class="selector-tag">itunes</span><span class="selector-class">.apple</span><span class="selector-class">.ccgslb</span><span class="selector-class">.com</span><span class="selector-class">.cn</span></span><br><span class="line">(最后一个没找到<span class="selector-tag">CDN</span>地址..)</span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>然后根据 114DNS 和 Google DNS 综合查询以上地址的 IP。顺便发现地址里有 <code>cnc</code>, <code>cncssr</code> 这样的关键字，于是正好尝试把 <code>cnc</code> 改成 <code>tel</code> 于是得到了电信节点的 IP。</p>
+<p>现在写一个两句话的 js 脚本来生成一份针对 <code>a&#123;1-2000&#125;.phobos.apple.com</code> 的加速列表(废话这种东西能手写吗要累死啦)，以达到尽可能将电信、联通的节点混在一起，保证各个 ISP 用户的下载速度。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Accelerate IPs for Apple download service.</span></span><br><span class="line"><span class="comment">// apple-ips.js</span></span><br><span class="line"><span class="keyword">var</span> ips = [</span><br><span class="line">  <span class="string">&#x27;221.192.144.12&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;182.118.46.137&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;124.95.150.148&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;123.235.32.2&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;119.84.69.17&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;122.228.85.196&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;115.231.150.15&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;61.164.153.7&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;183.57.28.18&#x27;</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1</span>; i &lt;= <span class="number">2000</span>; i++) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(ips[<span class="built_in">Math</span>.floor(<span class="built_in">Math</span>.random()*ips.length)] + <span class="string">&#x27; a&#x27;</span> + i + <span class="string">&#x27;.phobos.apple.com&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
+<p>然后</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; <span class="keyword">node</span> <span class="title">apple-ips</span>.js &gt; apple.conf</span><br></pre></td></tr></table></figure>
 
-block copyright
-    include partial/copyright
+<p>就得到一份可以直接用的加速列表啦。</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2014/05/17/repo-arm-disk-rescue-and-resize/" class="prev">PREV</a><a href="/2014/05/07/new-njlug-homepage/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2014/05/15/accelerate-apple-services-in-cn/';
+var disqus_title = '为国内用户加速 Apple 服务';
+var disqus_url = 'https://blog.phoenixlzx.com/2014/05/15/accelerate-apple-services-in-cn/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

@@ -1,20 +1,39 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 为 Linux 服务器编写的 BDRip 脚本 · Phoenix's island</title><meta name="description" content="为 Linux 服务器编写的 BDRip 脚本 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">为 Linux 服务器编写的 BDRip 脚本</h1><div class="post-info">2014年4月7日</div><div class="post-content"><p>最近状态比较不好… 所以准备拿学校的服务器撒撒气<em>(:з」∠)</em></p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>吐槽：学校个大土豪，居然用双路 E5-2620 + 16G 内存的服务器，强烈怀疑这服务器上的站加起来不如这俩CPU贵… 另外机器上只有一块 300G 的硬盘 (SAS?) 是什么情况… 以及盗版的 RHEL5 是什么情况… 以及 /opt 分了 236G，rootfs 只有 19G 是要闹哪样…</p>
+<p>于是进入正题。Linux 服务器一般都不安装图形界面，更加节省资源。同时现在也能以每月数十美元的价格租到足够性能和带宽的独立服务器，更何况把任务丢给服务器自动化操作，人的时间便可以节省下来做更重要的事情。</p>
+<p>脚本需要如下软件包：</p>
+<ul>
+<li>ffmpeg</li>
+<li>mencoder</li>
+<li>x264</li>
+<li>mkvtoolnix</li>
+</ul>
+<p>学校的服务器是 RHEL5 还没给激活，没办法换了 CentOS 的源，上面的一些软件包需要从 repoforge 获得。Ubuntu/Debian 的话，一般启用专有软件仓库就可以了。</p>
+<p>下面贴脚本。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># $1 = origin file</span></span><br><span class="line"><span class="comment"># $2 = output file</span></span><br><span class="line"><span class="comment"># $3 = quality</span></span><br><span class="line"><span class="comment"># $4 = threads</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The crf option controls encoding quality, and indirectly the final</span></span><br><span class="line"><span class="comment"># filesize. The higher the value, the more compression and thus smaller</span></span><br><span class="line"><span class="comment"># file size. Reduce the value and file size will go up. A value of 21</span></span><br><span class="line"><span class="comment"># should produce a file of approximately 4GB in size for a typical movie.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Encode the video using x264, ignore the audio for now.</span></span><br><span class="line">mencoder <span class="variable">$1</span>.m2ts \</span><br><span class="line">-ovc x264 -x264encopts \</span><br><span class="line">crf=<span class="variable">$3</span>:frameref=3:bframes=3:direct_pred=auto:weight_b:partitions=all:8x8dct:me=umh:mixed_refs:trellis=1:nopsnr:nossim:subq=6:level_idc=41:threads=<span class="variable">$4</span> \</span><br><span class="line">-nosound \</span><br><span class="line">-of rawvideo \</span><br><span class="line">-o <span class="variable">$2</span>.x264</span><br><span class="line"></span><br><span class="line"><span class="comment"># Extract first sound track, normally stream 0:1 in BDs.</span></span><br><span class="line">ffmpeg -i <span class="variable">$1</span>.m2ts -map 0:1 -acodec flac <span class="variable">$2</span>.flac</span><br><span class="line"></span><br><span class="line"><span class="comment"># Convert raw x264 video to MP4</span></span><br><span class="line">ffmpeg -i <span class="variable">$2</span>.x264 -vcodec copy <span class="variable">$2</span>.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># Finally, merge everything into a single MKV file</span></span><br><span class="line">mkvmerge -o <span class="variable">$2</span>.mkv <span class="variable">$2</span>.mp4 --track-name 0:Jpn <span class="variable">$2</span>.flac</span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment if you want to clean up your working environment.</span></span><br><span class="line"><span class="comment"># rm $2.x264 $2.flac $2.mp4</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Tell the user we&#x27;re done.</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Rip complete. Output file is <span class="variable">$2</span>.mkv&quot;</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>保存为 <code>transcode.sh</code> 并赋予可执行权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x transcode.sh</span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>脚本基本上是从下面的参考链接里抄来的，但是做了一些更改以适合我目前的需求。脚本接受 4 个参数，分别为输入文件(不含扩展名)、输出文件(不含扩展名)、质量、线程数。我在服务器上 Rip 的文件是 zyo 买的「未確認で進行形」第一卷OVA，命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./transcode.sh 00004 4 18 20</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p><code>transcode.sh</code> 是当前目录下的脚本文件，<code>00004</code> 代表当前目录下的 <code>00004.m2ts</code> 片源，输出文件将是 <code>4.mkv</code>，压缩质量为 <code>18</code>，编码过程使用 20 个线程(服务器一共 12 个核心 24 个线程么我就不客气啦。</p>
+<p>OVA压缩大约使用了不到 20 分钟的时间，最终文件大小不到 500M。看起来效果还可以嗯…</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://wiki.gentoo.org/wiki/FFmpeg_-_Extract_Blu-Ray_Audio">FFmpeg - Extract Blu-Ray Audio - Gentoo Wiki</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.rcomputer.eu/21-zoznam/operacne-systemy/linux/157-howto-encode-a-blu-ray-rip-into-a-smaller-format-without-losing-quality">HowTo: Encode a Blu-ray rip into a smaller format without losing quality</a></li>
+</ul>
+</div></article></div></section><footer><div class="paginator"><a href="/2014/04/28/sublive-live-subtitle-for-local-players/" class="prev">PREV</a><a href="/2014/03/25/yet-anothor-better-gif-method/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2014/04/07/bdrip-script-for-linux-server/';
+var disqus_title = '为 Linux 服务器编写的 BDRip 脚本';
+var disqus_url = 'https://blog.phoenixlzx.com/2014/04/07/bdrip-script-for-linux-server/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

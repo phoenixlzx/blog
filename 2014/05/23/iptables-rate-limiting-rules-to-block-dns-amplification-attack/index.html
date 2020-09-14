@@ -1,20 +1,23 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 使用 iptables 过滤 DNS 放大攻击 · Phoenix's island</title><meta name="description" content="使用 iptables 过滤 DNS 放大攻击 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">使用 iptables 过滤 DNS 放大攻击</h1><div class="post-info">2014年5月23日</div><div class="post-content"><p>昨晚开始我们的 DNS 日志中出现大量的针对<code>wradish.com</code>的<code>ANY</code>记录请求，导致大量正常解析请求超时。今天上午到中午时分再次出现流量更大、针对<code>ping.zong.co.ua</code>的<code>ANY</code>记录请求，导致整个 DNS 服务瘫痪，完全无法响应正常解析请求。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>检查后发现 <code>wradish.com</code> 早已因多次 DNS 放大攻击而被列入开放 DNS 服务器黑名单，网络上也有大量的针对该域名攻击请求包的过滤方法。<code>ping.zong.co.ua</code> 却完全没有任何搜索记录。</p>
+<p>DNS 放大攻击 (DNS Amplification Attack) 即通过向多台 DNS 开放服务器发送无意义的 recursive 解析请求，从而使得根域名服务器遭到超大流量的解析请求包，无暇顾及正常的解析请求，由此实现分布式拒绝服务攻击 (Distributed Denial of Service)。我们的 DNS 服务器在这里既是攻击者，也是受害者。</p>
+<p>DNSMasq 默认允许 recursive 请求，且似乎本身就没有设计为开放 DNS 服务，所以貌似也没有办法禁用掉 recursive 请求。因此我们使用 <a target="_blank" rel="noopener" href="http://blog.dataforce.org.uk/2013/08/limiting-the-effectiveness-of-dns-amplification/">iptables 规则</a>来过滤掉这些请求。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create a chain to store block rules in</span></span><br><span class="line">iptables -N BADDNS </span><br><span class="line"></span><br><span class="line"><span class="comment"># Match all &quot;IN ANY&quot; DNS Queries, and run them past the BADDNS chain.</span></span><br><span class="line">iptables -A INPUT -p udp --dport 53 -m string --hex-string <span class="string">&quot;|00 00 ff 00 01|&quot;</span> --to 255 --algo bm -m comment --comment <span class="string">&quot;IN ANY?&quot;</span> -j BADDNS</span><br><span class="line">iptables -A FORWARD -p udp --dport 53 -m string --hex-string <span class="string">&quot;|00 00 ff 00 01|&quot;</span> --to 255 --algo bm -m comment --comment <span class="string">&quot;IN ANY?&quot;</span> -j BADDNS</span><br><span class="line"></span><br><span class="line"><span class="comment"># Block domains that are being used for DNS Amplification...</span></span><br><span class="line">iptables -A BADDNS -m string --hex-string <span class="string">&quot;|04 72 69 70 65 03 6e 65 74 00|&quot;</span> --algo bm -j DROP --to 255 -m comment --comment <span class="string">&quot;ripe.net&quot;</span></span><br><span class="line">iptables -A BADDNS -m string --hex-string <span class="string">&quot;|03 69 73 63 03 6f 72 67 00|&quot;</span> --algo bm -j DROP --to 255 -m comment --comment <span class="string">&quot;isc.org&quot;</span></span><br><span class="line">iptables -A BADDNS -m string --hex-string <span class="string">&quot;|04 73 65 6d 61 02 63 7a 00|&quot;</span> --algo bm -j DROP --to 255 -m comment --comment <span class="string">&quot;sema.cz&quot;</span></span><br><span class="line">iptables -A BADDNS -m string --hex-string <span class="string">&quot;|09 68 69 7a 62 75 6c 6c 61 68 02 6d 65 00|&quot;</span> --algo bm -j DROP --to 255 -m comment --comment <span class="string">&quot;hizbullah.me&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Rate limit the rest.</span></span><br><span class="line">iptables -A BADDNS -m recent --<span class="built_in">set</span> --name DNSQF --rsource</span><br><span class="line">iptables -A BADDNS -m recent --update --seconds 10 --hitcount 1 --name DNSQF --rsource -j DROP</span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>添加以上规则后执行 <code>iptables-save</code> 来使更改生效。</p>
+<p>目前为止似乎没有报告出现了明显规模的 DNS 放大攻击征兆，攻击者针对我们防火墙封锁的反应速度、攻击所用的记录以及从日志中发现的大量不同请求源也暗示着我们的服务器可能是最终攻击目标，用攻击流量消耗尽服务器带宽而导致服务瘫痪。至于原因，我也没有想明白为何会有攻击者对一个小型私用服务器感兴趣。</p>
+<p>PS. 到本文发表时，攻击依旧在继续，且流量越来越大。目前阿里云的云盾设置可以说无力，只能依靠 iptables 暂时缓解。后续的应对计划仍在制定中。</p>
+<p>=== 2014-05-24 更新 ===</p>
+<p>Aveline 菊苣给出了一个<a target="_blank" rel="noopener" href="https://github.com/smurfmonitor/dns-iptables-rules">DNS Amplification IPTABLES block lists</a> 给点128个赞！</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2014/07/21/setup-openconnect-server-on-ubuntu/" class="prev">PREV</a><a href="/2014/05/19/for-loop-in-async-function-with-async-in-it/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2014/05/23/iptables-rate-limiting-rules-to-block-dns-amplification-attack/';
+var disqus_title = '使用 iptables 过滤 DNS 放大攻击';
+var disqus_url = 'https://blog.phoenixlzx.com/2014/05/23/iptables-rate-limiting-rules-to-block-dns-amplification-attack/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

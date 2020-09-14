@@ -1,20 +1,41 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> ThinkPad X1 Carbon 2015 与久违的 Arch Linux · Phoenix's island</title><meta name="description" content="ThinkPad X1 Carbon 2015 与久违的 Arch Linux - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">ThinkPad X1 Carbon 2015 与久违的 Arch Linux</h1><div class="post-info">2015年12月28日</div><div class="post-content"><p>对 X1 Carbon 2015 垂涎已久。然而中国市场不提供定制配置、没有 16G 内存的版本、512G PCIe SSD 的型号配置触控屏。这些都不能忍…于是折腾了好久，打扰了至少三位在美国的朋友，最终在黑色星期五当天下单，前天顺丰到手。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>先晒一下单。这个配置在联想美国官网购买的原价是 2622.60 美元，黑色星期五的各种优惠后价格是 1630 美元。嘛… <del>多出来的预算败了一块 1TB SSD 当移动硬盘</del>，真是麻烦帮忙带回国的朋友了(っ*’ω’*c)</p>
+<p><strong>X1 Carbon 2015 20BSCTO1WW</strong></p>
+<ul>
+<li>Intel Core i7 5600U 2.6GHz / 3.6GHz</li>
+<li>16G (2x8G) DDR3 1600MHz On-board RAM</li>
+<li>512G PCIe SSD</li>
+<li>2560x1440 QWHD IPS</li>
+<li>Fingerprint Reader</li>
+<li>Sierra LTE EM7345</li>
+</ul>
+<p>其中 SSD 是 SAMSUNG SM951，<a target="_blank" rel="noopener" href="https://plus.google.com/+PhoenixNemo/posts/YUURHcWtF49">测试读写速度分别为 1546MB/s 和 1260MB/s</a>。<code>dmidecode --type memory</code> 显示有两条镁光制造的内存，这个倒是和网络上流传的单根内存不太一样。不过两根都是 on-board，所以是无法更换的。</p>
+<p>屏幕颜色偏暖，大概是为了长时间工作不会太劳累设定的。ThinkScope <a target="_blank" rel="noopener" href="http://www.thinkscopes.com/download/lg-lp140gh1-spa2/">提供了一份 ICC 文件</a>，效果有点偏蓝(紫红？)。不过屏幕型号并不是页面上写的 LG LP140GH1-SPA2，而是 LG LP140QH1-SPB1。总之雾面屏加 86% sRGB coverage 导致它的显示效果比旁边的 MacBook Pro Retina 差了一大截，而且 HiDPI 带来软件上的问题… 嘛这个后面再说。</p>
+<p>X1 Carbon 2015 整个机身做工很好，拿着很有份量(不是沉！)给人一种很结实的感觉，完全没有其他 ThinkPad 的塑料感。唯一略心颤的是屏幕没办法像 MacBook Pro 一样稳，和其他笔记本一样调整屏幕角度还是会晃动几下，大概是铰链设计的差异导致。键盘仍然是那个熟悉的手感——哪怕是悬浮式键帽，仍然和老式 ThinkPad 键盘手感不相上下。换到这么舒服的键盘之后打字速度已经快到让 fcitx 分不清键序啦( ´∀ )σ)Д`)<del>其实是 GTK 程序的 bug</del>。ThinkLight 改到键盘下方，可以更好地看清键帽<del>更高大上了</del>，但是没办法当作光源看其他东西… 不过本来也不怎么亮还是爱护下眼睛吧。触控板很舒服，虽然大概还是不够和 MacBook Pro 相比，毕竟人家有底层驱动优化，系统层还支持很多手势。单从手感上来讲还是很不错的。</p>
+<p>新本本送到后开机检查硬件，然后当然是要删掉预装的 Windows 10 然后换上 Arch Linux 啦。之前 T420 的 UEFI 安装 Arch Linux 总是启动不能，然而 X1 Carbon 就很顺利。当然是关掉了 Secure Boot 的。</p>
+<p>续航感觉还不错，中午送到开箱检查的时候就还有 60% 的电量，然后从下午开始到晚上一直在安装配置系统，到半夜的时候报告还剩 15% 电量。中间有几次编译，所以顺便看了下散热。室内温度大概 10 摄氏度，sensors 检测高负载时最高温度 57 摄氏度，一般工作温度 35-40 摄氏度。这是有点出乎意料的，本来以为超极本的散热都会很悲剧。不过据说其他人也有到过 80 度的，所以要再用用看。</p>
+<p>Sierra LTE EM7345 是 microSIM 槽，然而手头只有 nanoSIM 所以还没用上。回去学校把流量卡补成 microSIM 再玩玩看。</p>
+<p>安装过程完全不折腾。硬件兼容性报告只有一句话：Everything works out of box.</p>
+<p>如果一定要在兼容性上挑刺儿的话，大概是 GPS 只有在 Windows 下才有办法打开，打开之后就可以直接在 Linux 下用了。</p>
+<p>回到 Arch Linux 上。一年没用，KDE 已经快不认识了。通过更改 DPI、字体大小和图标大小，Qt5 的程序算是很好的支持了 HiDPI。然而一些 GTK / Qt4 程序就没那么好说话了… 总之用各种奇怪的办法让这些跟不上时代的程序变得勉强能看。</p>
+<p>刚开始用 MacBook Pro 不久的时候，除去再也无法接受 retina 之下的显示效果(<del>retina 有毒啊</del>)之外，由于键盘、输入法(!!!)、快捷键、工具链、UNIX 生态等等问题上，OS X 上的工作效率只有 Linux 的 1/3 左右(是真的，很早的时候解决一个问题大概花了一个多小时，后来在 OS X 上再次遇到却花了一个下午)。</p>
+<p>总之用来这几天，可以说是非常满意的。没有任何生产商设置的门槛，OS-Specific 的东西通过各种 折腾 Google、折腾 IRC 频道里的各位、折腾 ArchWiki… 等基本都解决了。现在看到它就有想摸一摸、想用它工作的冲动(๑•̀ㅂ•́)و✧然后上个图~</p>
+<p><img src="/static/img/posts/plasma-desktop-20151228.jpg" alt="Desktop"></p>
+<p><img src="/static/img/posts/kde-infocenter-20151228.jpg" alt="KInfoCenter"></p>
+<p>最后的一点牢骚。</p>
+<p>一年多没怎么碰 Linux 桌面，虽然看起来变化很大，但是实际上的提升基本没有感觉到。倒不如说，由于硬件技术一直在革新，Linux 桌面却没有了当年的势头。前段时间去 KDE 主页看的时候发现他们把捐赠放到了首页上，而且赞助页看起来好粗糙，完全不像是 KDE 一贯精致的设计风格。从对 HiDPI 的支持来看更是如此。<a target="_blank" rel="noopener" href="https://community.kde.org/KDE/High-dpi_issues">KDE/High-dpi issues</a> 页面从半年前到现在基本没有太大的变化…</p>
+<p>嘛。当然了就算是钱多得没处花的某有点软的公司也没让自己的操作系统好好的支持 HiDPI ( ´∀ )σ)Д`)</p>
+<p>开源界仍然有大量被广泛使用的应用保持着粗制滥造、works for me 等等的心态。虽然绝大多数不会有人为之付费，但是这并不是不认真的理由。而且这样下去也并不会有多少杀手级的应用出现。</p>
+<p><del>虽然作为 DevOps 的话只要有好用的命令行工具链就万事大吉了。</del> 更何况现在厨子整天瞎搞，果子就算还能继续赚无脑追捧的大众的钱，它还能制作多少 developer-friendly 的产品呢…<br>(´･ω･`)</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2015/12/29/archlinux-4g-lte-with-sierra-em7345/" class="prev">PREV</a><a href="/2015/12/21/migrating-to-uwsgi/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2015/12/28/returning-to-archlinux-with-thinkpad-x1-carbon-2015/';
+var disqus_title = 'ThinkPad X1 Carbon 2015 与久违的 Arch Linux';
+var disqus_url = 'https://blog.phoenixlzx.com/2015/12/28/returning-to-archlinux-with-thinkpad-x1-carbon-2015/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

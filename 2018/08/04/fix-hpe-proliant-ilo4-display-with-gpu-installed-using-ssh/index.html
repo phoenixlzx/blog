@@ -1,20 +1,42 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 通过 SSH 修正安装有 GPU 的 HPE Proliant 服务器 · Phoenix's island</title><meta name="description" content="通过 SSH 修正安装有 GPU 的 HPE Proliant 服务器 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">通过 SSH 修正安装有 GPU 的 HPE Proliant 服务器</h1><div class="post-info">2018年8月4日</div><div class="post-content"><p>由于越来越多的渲染、压制等需求，托供货商的关系搞来一台带有独立显卡的 HPE 服务器。经过几番折腾（包括特别奇怪的 LS26-C14 电源线）麻烦了帮忙托管的数据中心的大兄弟好几回，终于算是上架可以开机了。</p>
+<p>登入 iLO，安装许可证，启动 iLO Remote Console，打开电源，一切都很顺利。但是 Console 里显示 Early Initialization… 完成后，突然画面一黑，完全没了动静。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>以为 iLO 出了 bug，冷重启好几次都是一样的结果。百思不得其解。</p>
+<p>再重启一次。仔细观察了一番发现虽然没了画面，但是 POST Code 还是不断变化的，而且 Virtual Media 指示灯不断在闪烁，说明系统仍在正常运行，只是没有视频输出而已。</p>
+<p>因此问题定位在视频输出而非系统硬件。既然这台服务器装了显卡，那么很可能是 PCI-e 初始化后视频输出全部交给显卡处理了。搜索了一下 HPE Community，确实有这样的情况存在。解决方案是通过 BIOS 修改显卡设置为默认集成显卡、备选独立显卡。</p>
+<p>尝试在设备初始化阶段进入 BIOS，失败。</p>
+<p>联系数据中心远程操作的话，可能要等一段时间。</p>
+<p>纠结时随便点开 iLO 的管理页面，突然发现了华点：这货居然支持 SSH。</p>
+<p>对啦，HPE 的底层系统几乎都是魔改版 Linux，连他们的 SmartArray 都是 Linux 启动一个 Firefox 浏览器来操作的（X</p>
+<p>于是正好在网上搜到一篇<a target="_blank" rel="noopener" href="https://lukas.dzunko.sk/index.php/Hardware:_HP_Microserver_-_How_to_fix_ILO4_after_adding_second_graphics_card">通过 SSH 修改 BIOS 视频设置</a>的方法。记录如下。</p>
+<h3 id="SSH-进入-iLO"><a href="#SSH-进入-iLO" class="headerlink" title="SSH 进入 iLO"></a>SSH 进入 iLO</h3><p>确保 SSH 在 iLO 管理页面中已开启，然后使用 SSH 客户端正常连接：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh <span class="symbol">Administrator@</span><span class="number">10.6</span><span class="number">.254</span><span class="number">.121</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>（ssh 用户名是 Administrator 感觉各种违和）</p>
+<h3 id="连接到-Virtual-Serial-Port"><a href="#连接到-Virtual-Serial-Port" class="headerlink" title="连接到 Virtual Serial Port"></a>连接到 Virtual Serial Port</h3><p>命令很简单：<code>vsp</code></p>
+<p>在 iLO 管理页面重启系统，然后等待初始化完成。如果看到按下 <code>F9</code> 进入 BIOS 设置的提示，<strong>不要按下它</strong>否则会进入 GUI 模式（于是又去独立显卡了就。</p>
+<p>看到 <code>ESC</code> + <code>9</code> 进入 BIOS Setup Utility 时按下键组合，稍等一会儿应该就可以看到提示符 <code>rbsu&gt;</code>。</p>
+<h3 id="修改视频设置"><a href="#修改视频设置" class="headerlink" title="修改视频设置"></a>修改视频设置</h3><p>命令 <code>SHOW CONFIG VIDEO OPTIONS</code></p>
+<p>显示如下</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">|Optional Video Primary, Embedded Video Disabled &lt;=</span></span><br><span class="line"><span class="number">2</span><span class="string">|Optional Video Primary, Embedded Video Secondary</span></span><br><span class="line"><span class="number">3</span><span class="string">|Embedded Video Primary, Optional Video Secondary</span></span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>即默认关闭了集成显卡，只用独立显卡（不觉得很蠢吗！</p>
+<p>于是修改为第三项，默认使用集成显卡，独立显卡作为备用。</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="builtin-name">SET</span><span class="built_in"> CONFIG </span>VIDEO OPTIONS 3</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">|Optional Video Primary, Embedded Video Disabled</span></span><br><span class="line"><span class="number">2</span><span class="string">|Optional Video Primary, Embedded Video Secondary</span></span><br><span class="line"><span class="number">3</span><span class="string">|Embedded Video Primary, Optional Video Secondary &lt;=</span></span><br></pre></td></tr></table></figure>
 
-block copyright
-    include partial/copyright
+<p>然后敲 <code>EXIT</code> 退出并重启系统。</p>
+<h3 id="安装系统和驱动"><a href="#安装系统和驱动" class="headerlink" title="安装系统和驱动"></a>安装系统和驱动</h3><p>至此即可通过 iLO Advanced Console 正常安装操作系统。不过需要注意的是进入操作系统后即便安装了对应的显卡驱动，依然默认使用的是集成显卡。以及 RDP 只能使用软解，无法使用独立显卡加速视频输出。这不影响 Blender 或者 Cinema 4D 等直接操作显卡进行计算的程序，但是会影响直接输出视频到桌面的程序。通过 Teamviewer 则可以强制桌面运行在独立显卡上。</p>
+<p>顺便吐槽：Blender 把我的工程材质弄丢了…</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2018/08/04/archlinux-ramroot-office-service-router/" class="prev">PREV</a><a href="/2018/06/06/resize-lvm-rootfs-online/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2018/08/04/fix-hpe-proliant-ilo4-display-with-gpu-installed-using-ssh/';
+var disqus_title = '通过 SSH 修正安装有 GPU 的 HPE Proliant 服务器';
+var disqus_url = 'https://blog.phoenixlzx.com/2018/08/04/fix-hpe-proliant-ilo4-display-with-gpu-installed-using-ssh/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

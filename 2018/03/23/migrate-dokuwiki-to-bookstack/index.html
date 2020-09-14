@@ -1,20 +1,37 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 迁移 DokuWiki 到 BookStackApp · Phoenix's island</title><meta name="description" content="迁移 DokuWiki 到 BookStackApp - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">迁移 DokuWiki 到 BookStackApp</h1><div class="post-info">2018年3月23日</div><div class="post-content"><p>Wiki 这么反人类的语法是怎么存在这么久的？？？？？？？</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>总之受不了 Wiki 语法的可维护性了。什么？这玩意儿有维护性？？？</p>
+<p>以及万年不更新的各种插件。系统升级后 PHP 7 不兼容，一看还是 swiftmail 的问题。生气。</p>
+<p>正好有需求要整合一套知识库平台，搜索了一下 Confluence 的 alternative，发现了 <a target="_blank" rel="noopener" href="https://www.bookstackapp.com/">BookStackApp</a> 和 <a target="_blank" rel="noopener" href="https://www.phacility.com/">Phabricator</a>。</p>
+<p>前者适合个人或开源社区使用，后者则是一整套企业协作解决方案。对于我的需求来讲，BookStackApp 就足够啦。</p>
+<h3 id="页面数据"><a href="#页面数据" class="headerlink" title="页面数据"></a>页面数据</h3><p>DokuWiki 并不使用数据库，因此没有一个通用的中间件来实现数据格式转换。而 DokuWiki 的语法非常奇葩——比如，它的一级标题是 <code>====== 这样 ======</code>，六级标题才是 <code>= 这样 =</code>，正好和一般的 Wikitext 倒置。图片、内链等的表达方式也相当愚蠢，这些问题使我在思考迁移方案的第一个小时内就放弃了直接从源码转移的途径。</p>
+<p>顺便，还有另外一个问题——本来为了使 Wiki 易于编写，这 DokuWiki 还安装了 Markdown 插件。因此部分页面中混杂着 Markdown 语法，更增加了源码处理的复杂度。</p>
+<p>综合来看，最通用的数据格式，就是最终渲染出来的 XHTML 了。</p>
+<h3 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h3><p>DokuWiki 的图片存储策略也是非常的奇特。由于它没有数据库，因此为了保持图片与页面的对应，它将图片存储在每个页面同样的路径下，并通过执行 PHP 的方式获取（扶额。</p>
+<p>更甚者！！！</p>
+<p>外链的图片，也是通过 <code>/lib/exe/fetch.php</code> 带参数来获取！！</p>
+<p>我  的  天  哪。</p>
+<p>因此既然在页面数据的考量中决定了使用最终渲染输出的 XHTML 来处理数据格式，图片也需要特殊的下载和归档技巧。这将需要使用 <code>sanitize-html</code> 提供的 <code>transformer</code> 方法来实现。</p>
+<h3 id="逻辑实现"><a href="#逻辑实现" class="headerlink" title="逻辑实现"></a>逻辑实现</h3><p>一开始尝试了一些 Site Exporter 插件，但遗憾的是并没有什么真正能派上用场。甚至一些暴力递归下载所有页面和资源的脚本的表现也非常糟糕。</p>
+<p>但是根据 DokuWiki 的官方 Tips，它可以将文章内容单纯导出 XHTML，只需要加上 <code>?do=export_xhtmlbody</code> 参数即可。这就方便了，因为这样只需要一个完整的页面列表就可以了。随便找一个可以输出子命名空间的插件，新建一个页面用于从根命名空间展开就 OK 啦。</p>
+<p>请求这个列表页面的 XHTML body 输出，使用 <code>cheerio</code> 遍历所有的 <code>a</code> 标签，就获得了所有要导出的页面地址。分别再去请求这些页面的 XHTML body 输出，做如下处理：</p>
+<ol>
+<li>跟踪所有的 <code>img</code> 标签，下载图片文件并按预定义的路径规则和文件名归档。</li>
+<li><code>sanitize-html</code> 清除所有不必要的标签、样式、id 和 class。</li>
+<li><code>sanitize-html</code> 按预定义的路径规则更新所有 <code>a</code> 和 <code>img</code> 标签属性。</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://github.com/phoenixlzx/dokuwiki-exporter/blob/master/exporter.js">看代码</a></p>
+<p>后来发现 DokuWiki 的性能不足以支撑异步请求的速度，额外加上了 <code>sleep</code> 模块来控制请求频率（扶额。</p>
+<p>脚本执行完后，将图片目录移动到 BookStackApp 的对应位置，便可以直接读取所有的 HTML 文件来导入数据啦。</p>
+<p>用了这么久，才发现原来还有比 raw HTML 更难以维护的数据格式啊…（望天。</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2018/04/18/play-with-linux-lacp-bonding-on-vlan/" class="prev">PREV</a><a href="/2018/02/01/build-archlinux-image-template-for-aliyun/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2018/03/23/migrate-dokuwiki-to-bookstack/';
+var disqus_title = '迁移 DokuWiki 到 BookStackApp';
+var disqus_url = 'https://blog.phoenixlzx.com/2018/03/23/migrate-dokuwiki-to-bookstack/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

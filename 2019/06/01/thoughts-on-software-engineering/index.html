@@ -1,20 +1,32 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 软件工程实践上的一点思考 · Phoenix's island</title><meta name="description" content="软件工程实践上的一点思考 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">软件工程实践上的一点思考</h1><div class="post-info">2019年6月1日</div><div class="post-content"><p>曾经大学时对于软件工程这类理论课不屑一顾，认为这些课本都是只在大学里讲学而并不实际参与工程的教授写的东西。但是经过这些年从自己开发程序编写代码，到与公司团队同学、兴趣圈的朋友一起开发项目，也积累、总结了一些经验和教训。正巧昨晚在游戏建设里参与了这类讨论，于是记下一些思考免得忘记。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<h4 id="案例-1"><a href="#案例-1" class="headerlink" title="案例 1"></a>案例 1</h4><p>命令方块是 Minecraft 里用于执行游戏命令、实现各种触发性或持续性功能的方块。在游戏地图中需要展示一些浮空的名称标签，便是用命令方块生成隐形盔甲架实现的。这些盔甲架参数复杂且需要在地图里很多特定位置生成，负责的同学便在每个生成的位置下面放了重新生成的命令方块，生成的坐标是相对坐标，因此写好标签的命令方块便可被无限复用。</p>
+<p>由于盔甲架属于实体，而实体在 Minecraft 中被认为是不可靠的：有无数种可能这实体会被移动或被清除。<br>因此我的建议是：将这些命令方块全部放到控制室，坐标写成绝对坐标并加上统一标签，便可做到一键生成全部、一键清除全部。</p>
+<p>该同学表示：不想写绝对坐标，因为很麻烦。</p>
+<h4 id="案例-2"><a href="#案例-2" class="headerlink" title="案例 2"></a>案例 2</h4><p>由于游戏玩法的需要，编写了新的插件。几天后按照原计划应当可以准备第一次基本功能测试时，负责开发的同学表示只写了大约 1/4 的功能。进度很慢的原因是 Minecraft 的实现过于糟糕，而 Spigot 和 Paper 等修改版也没有很好封装 API 导致几乎所有的事件都需要手动处理。</p>
+<p>接下来的协同开发中该同学又在反复尝试对配置文件中属性类似的部分使用同一个序列化/反序列化方法处理、对不同配置文件中的不同物品记录项也加上了一层包装来使得其能够被一个序列化/反序列化方法处理、在其他一些程序逻辑上也在尝试复用代码减少冗余度。</p>
+<p>我说，你先专心把功能快速叠出来，然后再去想优化的事情。<br>这位同学表示不能接受，他认为代码应该从编写时就是整洁的。</p>
+<h4 id="论点：矫枉过正的代码复用"><a href="#论点：矫枉过正的代码复用" class="headerlink" title="论点：矫枉过正的代码复用"></a>论点：矫枉过正的代码复用</h4><p>代码复用是很常见的代码结构优化方式。更少的代码冗余可以减少维护的复杂度，也降低出错的可能。</p>
+<p>但是在案例 1 中，如此复用代码（放置同样的命令方块）却实际上造成了更多的冗余：如果要修改一个属性，就需要记录整个世界里每一个命令方块的位置，然后一个个去修改它。相反，由于游戏世界地图里的建筑几乎不可能变化（虽然现实需求很少会有这种条件），统一放在控制室、hard code<br>所有的坐标作为一个大方法调用，却是在这需求前提下的更好的实现方式。如果需要修改属性，可以只在一个地方修改所有的命令方块。</p>
+<p>或者说，重复放置命令方块的过程，就是 copy’n’paste 冗余代码的过程。</p>
+<p>而案例 2 则更具有代表性。在项目初期，是否应当关注代码质量？<br>我认为是应当关注的，但是这基于开发者的工程实践经验。优秀的、熟练的开发者应当在代码编写时就能灵活使用各种简单的优化手段减少初期的代码冗余，但是对于在校大学生没有足够的项目经验时，面对紧凑的项目时间安排应当集中更多精力实现功能。此时过分关注代码优化会被分心导致各种问题——例如这位同学编写的代码基本没有能够一次通过所有测试的情况，而且绝大多数的错误都看起来只是粗心，并不是不理解、写不出的问题。</p>
+<h4 id="论点：实现，调整，优化"><a href="#论点：实现，调整，优化" class="headerlink" title="论点：实现，调整，优化"></a>论点：实现，调整，优化</h4><blockquote>
+<p>“Make it work, make it right, make it fast.” – Kent Beck</p>
+</blockquote>
+<p>这是很多软件工程推崇的敏捷开发指导方向。在案例 1 中，该同学只做了第一步——复用同样的、带有相对坐标的命令方块（方法）快速实现了所有的功能。但是从后续维护的角度来讲，这样的实现没有 make it right，更不用提 fast。</p>
+<p>而在案例 2 中，这位同学将三个阶段在初期就全部揉进去，但是由于工程经验不足，在思考优化方案时花费了过多的精力，也导致了代码精度不够，反复修改也无法顺利通过测试。</p>
+<p>从个人经验来看，前期的代码编写应注重功能实现，并在编码能力基础上直接编写清晰的代码结构。功能实现后，再根据需求和测试中的问题「重构」打磨细节、尝试更好的实现方式。这个过程不仅在完善整个程序，对自己的系统架构把握和设计经验也有很大的提升。最后一个阶段，则是针对性的优化少量代码使整个系统更加稳定、高效。</p>
+<h4 id="论点：架构的改动"><a href="#论点：架构的改动" class="headerlink" title="论点：架构的改动"></a>论点：架构的改动</h4><p>这是一个比较小型的项目。需求和基本功能架构从一开始便已经讨论清楚。后续的调整不大，但是每当有少量的需求修改或架构微调，都导致了很大的代码变动。而按照这位同学的思路，每次改动都要重新思考代码结构，这浪费很多的时间。</p>
+<p>从实际工程角度，需求变化并带来架构的微调甚至大改动都可以说是很常见的事情。在前期编码实现阶段如果揉入过多对于代码结构的过多考量，每次改动都可能会使这些思考的时间被浪费。因此，在前期编码时不应为架构考虑消耗过多的时间，而在重构过程中，由于已经完成基本的功能实现，且对已有代码还处在熟悉的热度，可以快速适配需要修改、调整的架构，并基于前期编码时的各种尝试和实验的结论选择最佳的实现方式。</p>
+<p>以上是基于近期项目中的讨论，在软件工程层面上的思考。如有缺漏不当之处，欢迎指正。</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2019/05/07/get-started-with-wireguard/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2019/06/01/thoughts-on-software-engineering/';
+var disqus_title = '软件工程实践上的一点思考';
+var disqus_url = 'https://blog.phoenixlzx.com/2019/06/01/thoughts-on-software-engineering/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

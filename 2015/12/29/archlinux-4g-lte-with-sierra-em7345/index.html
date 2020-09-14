@@ -1,20 +1,36 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> Sierra 4G LTE EM7345 with Arch Linux · Phoenix's island</title><meta name="description" content="Sierra 4G LTE EM7345 with Arch Linux - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">Sierra 4G LTE EM7345 with Arch Linux</h1><div class="post-info">2015年12月29日</div><div class="post-content"><p>X1 Carbon 2015 内置 Sierra EM7345 4G LTE 适配器，系统里看到是这样：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ lsusb</span><br><span class="line">Bus <span class="number">001</span> Device <span class="number">002</span>: ID <span class="number">1199</span>:a001 Sierra Wireless, Inc.</span><br></pre></td></tr></table></figure>
 
-block site_title
-    != page.title + " · " + config.title
+<p>根据 <a target="_blank" rel="noopener" href="https://support.lenovo.com/us/en/documents/pd031021">ThinkPad EM7345 4G LTE Mobile Broadband - Overview and Service Parts</a> 这块 EM7345 基本完美支持联通的 3G/4G 制式。</p>
+<a id="more"></a>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>插入 microSIM 卡，然后安装需要的包：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># pacman -S usbutils usb_modeswitch modemmanager mobile-broadband-provider-info</span></span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>启用 modemmanager 服务</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="builtin-name">enable</span> modemmanager.service</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
+<p>然后加载内核模块 <code>cdc_mbim</code>，文件 <code>/etc/mkinitcpio.conf</code></p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">MODULES</span>=<span class="string">&quot;... cdc_mbim&quot;</span></span><br></pre></td></tr></table></figure>
 
-block copyright
-    include partial/copyright
+<p>重新生成内核镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> mkinitcpio -p linux <span class="comment"># or change to your kernel preset here</span></span></span><br></pre></td></tr></table></figure>
+
+<p>重启即可在 NetworkManager 中新建 GSM 设备的 broadband (移动宽带) 连接。</p>
+<p>顺便上一张图，老家小城市还是郊区所以 4G 信号几乎没有，还是达到了这个速度，点个赞(๑•̀ㅂ•́)و✧</p>
+<p><img src="/static/img/posts/4g-lte-speedtest-20151229.jpg" alt="Sierra EM7345 4G LTE Speedtest on China Unicom"></p>
+<p>参考文档：</p>
+<ul>
+<li>Lenovo ThinkPad X1 Carbon Gen 2 -&gt; <a target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/Lenovo_ThinkPad_X1_Carbon_(Gen_2)">https://wiki.archlinux.org/index.php/Lenovo_ThinkPad_X1_Carbon_(Gen_2)</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/USB_3G_Modem">USB 3G Modem</a></li>
+</ul>
+</div></article></div></section><footer><div class="paginator"><a href="/2016/01/21/try-to-migrate-to-aws-cloud/" class="prev">PREV</a><a href="/2015/12/28/returning-to-archlinux-with-thinkpad-x1-carbon-2015/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2015/12/29/archlinux-4g-lte-with-sierra-em7345/';
+var disqus_title = 'Sierra 4G LTE EM7345 with Arch Linux';
+var disqus_url = 'https://blog.phoenixlzx.com/2015/12/29/archlinux-4g-lte-with-sierra-em7345/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

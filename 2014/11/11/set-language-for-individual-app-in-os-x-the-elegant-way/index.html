@@ -1,20 +1,27 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 用优雅的方式在 OS X 中为单个应用设置语言 · Phoenix's island</title><meta name="description" content="用优雅的方式在 OS X 中为单个应用设置语言 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">用优雅的方式在 OS X 中为单个应用设置语言</h1><div class="post-info">2014年11月11日</div><div class="post-content"><p>买到 CLIP STUDIO PAINT Pro，激活之后发现不给启动，显示 <code>Unsupported OS</code> 并退出。搜索了下发现是因为语言设置的问题导致，需要将系统环境设置为应用所支持的语言才能运行。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>嘛。日本人做事情也是让人无话可说，那么多应用都没有多语言支持的… 用能支持的语言来显示就好了嘛。</p>
+<p>话说回来，我一开始设置的系统语言是简体中文，虽然后备语言加了 English 和日本語，不过有些不能自动变更语言的应用在更换系统语言为 English 之后变得很别扭。于是寻找可以单独设置应用语言的方法。</p>
+<p>用惯了 Linux 再用 OS X 其实并没有那么容易的改变习惯… 当我准备尝试单独 export 一份 locale 再运行 app 的时候 OS X 直接告诉我不适用我的表情简直和伊莉雅一样。</p>
+<p>…</p>
+<p>睡了一觉起来继续 Google。找到了可以单独为应用设置语言并且 launch 的 app <a target="_blank" rel="noopener" href="http://www.tj-hd.co.uk/en-gb/languageswitcher/">Language Switcher</a>，看起来不错，但是每次启动 CLIP STUDIO PAINT 都要先打开这货，这不是我想要的效果。</p>
+<p>于是最终找到一个合适的解决方案：用 <code>defaults</code> 命令。</p>
+<p>原帖在<a target="_blank" rel="noopener" href="http://hints.macworld.com/article.php?story=20061001065101830">这里</a>。</p>
+<p>设置 CLIP STUDIO PAINT Pro 语言环境命令：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">defaults write jp<span class="selector-class">.co</span><span class="selector-class">.celsys</span><span class="selector-class">.CLIPSTUDIOPAINT</span><span class="selector-class">.lip</span> AppleLanguages <span class="string">&#x27;(&quot;en-US&quot;)&#x27;</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>其中 <code>jp.co.celsys.CLIPSTUDIOPAINT.lip</code> 可以在应用的显示包信息 -&gt; Contents -&gt; Info.plist 中找到。</p>
+<p>执行后就可以直接双击启动啦~</p>
+<p>最后献丑一张w</p>
+<p><img src="/static/img/posts/2014111601.jpg" alt="Kira( &gt; ◡╹)~"></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2015/02/08/kancolle-broker/" class="prev">PREV</a><a href="/2014/10/14/2-notes-for-ssl-and-ipkvm/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2014/11/11/set-language-for-individual-app-in-os-x-the-elegant-way/';
+var disqus_title = '用优雅的方式在 OS X 中为单个应用设置语言';
+var disqus_url = 'https://blog.phoenixlzx.com/2014/11/11/set-language-for-individual-app-in-os-x-the-elegant-way/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

@@ -1,20 +1,45 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> WireGuard 真香 · Phoenix's island</title><meta name="description" content="WireGuard 真香 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">WireGuard 真香</h1><div class="post-info">2019年5月7日</div><div class="post-content"><p><del>真是老了跟不上时代了，这么好的东西为什么我现在才开始用？？</del></p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>其实这东西刚出来就在关注了不过确实前段时间才有机会尝试折腾一下。优点很多，也有无数人写过文章介绍，所以就不再多废话。主要看中它的 PtP 特性（服务器之间）和支持漫游（服务器-客户端）。当然目前在梯子方面的表现，即便是优秀的隧道方案，但由于折腾的人多了，面对万里城墙，这谁顶得住哇。</p>
+<p>所以本文只讨论 WireGuard 作为访问企业网的隧道方案，算是初步折腾的笔记。</p>
+<h4 id="服务器配置"><a href="#服务器配置" class="headerlink" title="服务器配置"></a>服务器配置</h4><p>一个基本的 PtP 配置结构 <code>/etc/wireguard/wg0.conf</code></p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[Interface]</span><br><span class="line">Address = <span class="number">10.0</span><span class="number">.0</span><span class="number">.1</span>/<span class="number">32</span></span><br><span class="line">PrivateKey = [CLIENT PRIVATE KEY]</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line">PublicKey = [SERVER PUBLICKEY]</span><br><span class="line">AllowedIPs = <span class="number">10.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">24</span>, <span class="number">10.123</span><span class="number">.45</span><span class="number">.0</span>/<span class="number">24</span>, <span class="number">1234</span>:<span class="number">4567</span>:<span class="number">89</span>ab::/<span class="number">48</span></span><br><span class="line">Endpoint = [SERVER ENDPOINT]:<span class="number">48574</span></span><br><span class="line">PersistentKeepalive = <span class="number">25</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
+<p>生成私钥</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">wg</span> <span class="string">genkey &gt; privatekey</span></span><br><span class="line"><span class="attr">chmod</span> <span class="string">600 privatekey</span></span><br></pre></td></tr></table></figure>
 
-block container
-    include mixins/post
-    +post(page)
+<p>基于私钥生成本机的公钥</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wg pubkey &lt;<span class="keyword"> private</span>key &gt;<span class="keyword"> public</span>key</span><br></pre></td></tr></table></figure>
 
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
+<p>或者一步完成的操作</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wg genkey | <span class="type">tee</span> privatekey | <span class="type">wg</span> pubkey &gt; publickey</span><br></pre></td></tr></table></figure>
 
-block copyright
-    include partial/copyright
+<p>额外生成预共享密钥来进一步增强安全性</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">wg</span> genpsk &gt; preshared</span><br></pre></td></tr></table></figure>
+
+<p>这样服务器之间的互联配置就基本完成了。使用 <code>wg-quick up &lt;config&gt;</code> 来快速启动 WireGuard。</p>
+<p>如果要配合客户端使用，则需要配置 NAT。顺便如果客户端没有 IPv6，也可以通过此法来给客户端提供 IPv6 Enablement。</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[Interface]</span><br><span class="line">Address = 10.200.200.1/24</span><br><span class="line">Address = fd42:42:42::1/64</span><br><span class="line">SaveConfig = <span class="literal">true</span></span><br><span class="line">ListenPort = 51820</span><br><span class="line">PrivateKey = [SERVER PRIVATE KEY]</span><br><span class="line"></span><br><span class="line"><span class="comment"># note - substitute eth0 in the following lines to match the Internet-facing interface</span></span><br><span class="line">PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t<span class="built_in"> nat </span>-A POSTROUTING -o eth0 -j MASQUERADE; ip6tables -t<span class="built_in"> nat </span>-A POSTROUTING -o eth0 -j MASQUERADE</span><br><span class="line">PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t<span class="built_in"> nat </span>-D POSTROUTING -o eth0 -j MASQUERADE; ip6tables -t<span class="built_in"> nat </span>-A POSTROUTING -o eth0 -j MASQUERADE</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line"><span class="comment"># client foo</span></span><br><span class="line">PublicKey = [FOO<span class="string">&#x27;s PUBLIC KEY]</span></span><br><span class="line"><span class="string">PresharedKey = [PRE-SHARED KEY]</span></span><br><span class="line"><span class="string">AllowedIPs = 10.200.200.2/32, fd42:42:42::2/128</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Peer]</span></span><br><span class="line"><span class="string"># client bar</span></span><br><span class="line"><span class="string">PublicKey = [BAR&#x27;</span>s PUBLIC KEY]</span><br><span class="line">AllowedIPs = 10.200.200.3/32, fd42:42:42::3/128</span><br></pre></td></tr></table></figure>
+
+<p>在此例中需注意 <code>Allowed IPs</code> 不可 overlap 否则会造成包转发错误。</p>
+<h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h4><p>与上文中服务器配置相照应的客户端配置示例如下：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[Interface]</span><br><span class="line">Address = 10.200.200.2/24</span><br><span class="line">Address = fd42:42:42::2/64</span><br><span class="line">PrivateKey = [FOO<span class="string">&#x27;s PRIVATE KEY]</span></span><br><span class="line"><span class="string">DNS = 1.1.1.1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Peer]</span></span><br><span class="line"><span class="string">PublicKey = [SERVER PUBLICKEY]</span></span><br><span class="line"><span class="string">PresharedKey = [PRE-SHARED KEY]</span></span><br><span class="line"><span class="string">AllowedIPs = 0.0.0.0/0, ::/0</span></span><br><span class="line"><span class="string">Endpoint = [SERVER PUBLIC IP ADDRESS]:51820</span></span><br></pre></td></tr></table></figure>
+
+<p>客户端的 <code>AllowedIPs</code> 如果使用 catch-all <code>0.0.0.0/0, ::/0</code> 也就会默认转发所有的流量到服务器。该选项实际作用是路由表，控制哪些流量需要经由服务器转发。</p>
+<p>配置完毕即可使用 <code>wg-quick up &lt;config&gt;</code> 启动 WireGuard。如果一切顺利，通过路由追踪应该可以看到流量已经交由服务器转发。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>由于工作需要，经常合上笔记本动身前往其他地方。在接入传统企业网例如 L2TP/IPSec 甚至 AnyConnect 都无法保证设备下次进入工作状态时可以立即恢复连接。而 WireGuard 在不同网络、不同地域、不同网络中断时间等各种情况下均可在下次进入网络覆盖时立即恢复连接，再也不必担心网络中断恢复时手忙脚乱配置隧道或者不小心泄密啦。</p>
+<p>目前唯一的不足，大概就是还没有 Windows 客户端，没有办法推广到非技术部门（虽然影响不到我…</p>
+<p>总之，真香.jpg</p>
+<p>Reference:</p>
+<p>[1] <a target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/WireGuard">https://wiki.archlinux.org/index.php/WireGuard</a></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2019/06/01/thoughts-on-software-engineering/" class="prev">PREV</a><a href="/2018/12/14/bootable-archlinux-in-memory-rescue-system/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2019/05/07/get-started-with-wireguard/';
+var disqus_title = 'WireGuard 真香';
+var disqus_url = 'https://blog.phoenixlzx.com/2019/05/07/get-started-with-wireguard/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

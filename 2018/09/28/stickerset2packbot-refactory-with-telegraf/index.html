@@ -1,20 +1,34 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 重构 StickerSetBot · Phoenix's island</title><meta name="description" content="重构 StickerSetBot - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">重构 StickerSetBot</h1><div class="post-info">2018年9月28日</div><div class="post-content"><p>关注 <a target="_blank" rel="noopener" href="https://telegraf.js.org/">Telegraf</a> 有一段时间了。特别是最近 Telegram 上 spammer 猖獗导致 Telegram 对于用户行为限制越来越严格，由此想过写一个简单的 bot 来处理加群请求之类的。</p>
+<p>总之原因都是没时间。终于搞定一些事情之后发现之前瞎写的 <a href="https://blog.phoenixlzx.com/2016/08/23/my-first-yet-useless-telegram-bot/">Telegram 导出贴图 bot</a> 居然备受欢迎…正好 Telegram Bot API 也更新了，来重构吧！</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
-
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<h2 id="拆分逻辑代码"><a href="#拆分逻辑代码" class="headerlink" title="拆分逻辑代码"></a>拆分逻辑代码</h2><p>最头疼的事情首先是当时写这 bot 的时候只顾着考虑各种情况，逻辑像流水一样全部写成一坨。虽然实际不复杂吧但这不是 best practice。于是把每个功能单独拆出来先。</p>
+<p><code>on(&#39;command&#39;)</code> 的逻辑代码整块移出来作为 handler，然后能够原子化的功能再单独拆分成函数调用。目前的效果虽然还是有不少逻辑层在 handler 里，但是基本达到了比较方便维护的目的。</p>
+<p><del>handler 本来就是拿来写逻辑的啊摔</del></p>
+<p>接下来再清理冗余代码和各种 hard code，加了两个方法让代码看起来更整洁一些。于是就先这样。</p>
+<h2 id="迁移框架"><a href="#迁移框架" class="headerlink" title="迁移框架"></a>迁移框架</h2><p>好在 Telegraf 和之前用的框架在参数上很多兼容，所以这没有花太多时间。顺便尝试采用了一部分 ES6 的风格，嘛…果然不喜欢。</p>
+<p>所以就不要吐槽为什么 ES5 和 ES6 的风格混写了。</p>
+<p>之前要一大长串的传参现在只要一个 <code>context</code> 了好方便啊。中间件也好方便啊~</p>
+<p>以上。</p>
+<h2 id="调试：无尽的-bugfix"><a href="#调试：无尽的-bugfix" class="headerlink" title="调试：无尽的 bugfix"></a>调试：无尽的 bugfix</h2><p>并不指望一通大换血之后的代码能一次跑起来…但是没跑起来的原因是我传错了中间件值这不能忍！！为什么一会儿传的是函数本体一会儿传的是函数调用啊摔！！</p>
+<p>而且这问题还让我调了两个小时！！！</p>
+<p><del>调通了之后就很舒服了</del></p>
+<p>遇到的坑还有 <code>context</code> 本身不能当 session 用，然而不想再引入 session 中间件于是自己写了个超简陋的内存 session。就是为了多语言支持。因为一觉醒来发现这 bot 语言莫名其妙变中文了（<code>messages</code> 成了全局变量 = =</p>
+<p>当然还有 Telegram 自己的坑，比如什么贴纸就是死下载不能然后整个程序就 hang 着了。</p>
+<h2 id="一键导出贴纸包"><a href="#一键导出贴纸包" class="headerlink" title="一键导出贴纸包"></a>一键导出贴纸包</h2><p>终于！Telegram bot API 添加了 <code>StickerSet</code> 类型。只要有贴纸包名称，就可以获取整个贴纸包的信息。考虑不改变用户习惯的情况下（<del>你哪有什么用户啊可恶</del>）对本身处理贴纸和其他消息的函数做了修改，顺便又拆了俩函数出来（怎么代码越来越多了啊喂！</p>
+<p>最后结果就是没有一屏看不到头的函数啦~（你快够</p>
+<p>以及加入了用贴纸包链接导出一整组贴纸的功能，算是真正意义上的 StickerSetBot 了。</p>
+<p><del>然后贴纸过多卡死了 Telegram 的 ratelimiting</del></p>
+<h2 id="直接导出单张贴纸"><a href="#直接导出单张贴纸" class="headerlink" title="直接导出单张贴纸"></a>直接导出单张贴纸</h2><p>既然功能拆分了那也就方便加更多别的功能啦。比如不新建任务，直接甩过去一张贴纸来获得 PNG 文件~</p>
+<p>这只 bot 在<a target="_blank" rel="noopener" href="https://t.me/stickerset2packbot">这里</a>，源码在<a target="_blank" rel="noopener" href="https://github.com/phoenixlzx/telegram-stickerimage-bot">这里</a>。欢迎各种玩坏~（记得去发 issue</p>
+<p>就酱(,,•﹏•,,)</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2018/11/18/super-easy-logger-with-writestream/" class="prev">PREV</a><a href="/2018/08/04/archlinux-ramroot-office-service-router/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2018/09/28/stickerset2packbot-refactory-with-telegraf/';
+var disqus_title = '重构 StickerSetBot';
+var disqus_url = 'https://blog.phoenixlzx.com/2018/09/28/stickerset2packbot-refactory-with-telegraf/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

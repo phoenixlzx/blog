@@ -1,20 +1,27 @@
-extends partial/layout
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 想要导出 Telegram 贴图 · Phoenix's island</title><meta name="description" content="想要导出 Telegram 贴图 - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">想要导出 Telegram 贴图</h1><div class="post-info">2016年8月23日</div><div class="post-content"><p>Telegram 上出现了越来越多的优质贴纸，想要把这些贴纸用到其他 IM 平台上的时候就会比较麻烦，所以一直想要一键导出一个贴纸包的功能。</p>
+<a id="more"></a>
 
-block site_title
-    != page.title + " · " + config.title
+<p>可惜的是，Telegram bot API 的限制，并没有任何简单的办法通过贴纸消息获得贴纸包的信息。寻找另外的途径，例如 telegram.me 的贴纸链接会定向到 <code>tg://addstickers?set=[StickerSet]</code>。搜索了一下现成客户端的源码，都是交给 MTProto 的 API 处理，也没有明确的解析过程。而这些客户端所调用的 <code>messages.getStickerSet</code> 也没有在官方的文档中列出。（吐槽：Telegram 的协议、文档和代码真是糟糕，查阅的时候我的表情一直是 <strong>黑人问号.gif</strong></p>
+<p>由于最近状况不是很好，所以只好暂时放弃继续读 webogram 的源码。因为读 Angular 的东西实在是折磨…</p>
+<p>所以依然是选择直接发 sticker 再转为图片发给用户的模式。这样的已经有了相关的 bot，于是改为多个 sticker 打包、支持多语言、支持 jpg 和 png 以及批量缩放功能的 bot。需要安装 Node.js v4.0 及以上版本和支持 webp 的 ImageMagick。</p>
+<p>虽然实现效果看起来还可以，但是并未实现最初希望的功能，所以只能是练手用的轮子而已。不过，这个轮子稍微尝试了一些新的东西。例如<del>超简陋的内存数据库</del>，而且很多细节考量更加周到，例如任务锁虽然不是写过最麻烦的，不过应该算是相对完善的。<del>当然也考虑了内存数据库的手动释放以防内存爆炸</del>，<del>为此还特地在群里讨论了 object children 被 undefine 而 object 其他 children 还在被引用的状态下是否可以回收部分内存的问题</del>。</p>
+<p>源码的实现非常简单，但是好久不写代码还是手生，折腾了一下午写功能加一晚上和朋友们 debug。读源码戳 <a target="_blank" rel="noopener" href="https://github.com/phoenixlzx/telegram-stickerimage-bot">GitHub</a>。</p>
+<p><a target="_blank" rel="noopener" href="https://telegram.me/stickerset2packbot">这里有一只 bot</a> 跑在测试环境，所以可以尝试一下。如果没理你说明沙盒没开，那么就请自己去跑源码来使用辣ᕕ(ᐛ)ᕗ</p>
+<p>有几点坑，比如这个 <code>node-telegram-bot-api</code> 的 <code>onText</code> 方法无法正确匹配 Negative Lookahead 的正则表达式（不应该啊…然而没深究），<code>adm-zip</code> 非常非常不好用，<code>jszip</code> 文档表述不清 API 调用复杂然而用起来了就还不错。</p>
+<p>但是最坑的是，只为实现这么一个简单功能的 bot，我的 <code>node_modules</code> 目录下居然有</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Phoenix-X1-Carbon ::</span> <span class="string">js/telegram-stickerimagebot/node_modules</span> <span class="string">‹master›</span> <span class="string">»</span> <span class="string">ll</span> <span class="string">|</span> <span class="string">wc</span> <span class="string">-l</span>                                                                                               <span class="number">1</span> <span class="string">↵</span></span><br><span class="line"><span class="number">104</span></span><br></pre></td></tr></table></figure>
 
-block description
-    - var desc = page.desc || page.title + ' - ' + config.author;
-    meta(name="description", content=desc)
-
-block container
-    include mixins/post
-    +post(page)
-
-block pagination
-    include mixins/paginator
-    +post()
-    include partial/comment
-
-block copyright
-    include partial/copyright
+<p>WHAT??? <strong>104 个依赖包！！！</strong></p>
+<p>真是可怕…明明我已经尽可能减少不必要的依赖了…</p>
+<h4 id="2018-9-28-更新"><a href="#2018-9-28-更新" class="headerlink" title="===== 2018/9/28 更新 ====="></a>===== 2018/9/28 更新 =====</h4><p>Telegram bot API 更新了（早就）</p>
+<p>于是这只 bot 可以一键导出一组贴纸了。<a href="https://blog.phoenixlzx.com/2018/09/28/stickerset2packbot-refactory-with-telegraf/">详情</a></p>
+</div></article></div></section><footer><div class="paginator"><a href="/2016/09/07/powerdns-admin-replacing-moedns/" class="prev">PREV</a><a href="/2016/04/27/better-dns-with-unbound/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2016/08/23/my-first-yet-useless-telegram-bot/';
+var disqus_title = '想要导出 Telegram 贴图';
+var disqus_url = 'https://blog.phoenixlzx.com/2016/08/23/my-first-yet-useless-telegram-bot/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2020 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>
