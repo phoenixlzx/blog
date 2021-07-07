@@ -28,7 +28,7 @@
 <p>不过还是有收获，仙子根据不移除换行符则消息正常判断是 IRC 消息长度限制导致了 UTF-8 流被截断。RFC 规定 IRC 消息长度为512，但是一个 CJK 字符通常占3位。所以 512/3 差不多是170。嘛很不爽的把消息限制改成了144。这样发出来就不乱码了，但是总结大多比较长要连续发好几条消息导致游戏端被刷屏，玩家颇有微词。</p>
 <p>后面就方便多了，加了一条 <code>&#39;p&#39;</code> 命令，意为 <code>play</code> 即 <del>玩坏</del>。在 <code>messages.js</code> 里设定了一个 Object 包含2个数组，对应命令消息和响应消息。程序中用 <code>async</code> 来实现命令匹配和回复，以及在没有找到可用命令时发送命令未知消息。还有一条 <code>&#39;c&#39;</code> 用来执行一些真正的命令——比如退出 <em>(:з」∠)</em></p>
 <p>嘛现在这 <a target="_blank" rel="noopener" href="https://github.com/phoenixlzx/nyaabot">bot</a> 已经在群里开始调(wan)戏(huai)二小姐了233</p>
-</div></article></div></section><footer><div class="paginator"><a href="/2014/02/17/file-upload-with-expressjs-and-formidable/" class="prev">上一篇</a><a href="/2014/02/11/a-simple-wordpress-backup-script/" class="next">下一篇</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+</div></article></div></section><footer><div class="paginator"><a href="/2014/02/17/file-upload-with-expressjs-and-formidable/" class="prev">PREV</a><a href="/2014/02/11/a-simple-wordpress-backup-script/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
 var disqus_identifier = '2014/02/16/nyaabot-bot-for-nyaacat-irc/';
 var disqus_title = 'Nyaabot: 为喵窝服务器构建的 IRC 机器人';
 var disqus_url = 'https://blog.phoenixlzx.com/2014/02/16/nyaabot-bot-for-nyaacat-irc/';

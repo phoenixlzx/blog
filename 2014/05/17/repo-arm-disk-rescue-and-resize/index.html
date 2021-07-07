@@ -10,7 +10,7 @@
 <p>然后是一觉睡到第二天中午。觅食归来给 A.R.M 的 KVM 虚拟机硬盘增加了 100G。执行 <code>resize2fs</code> 的时候报错说已经达到最大空间，删掉 swap 之后依旧。接下来干了一件很作死的事情——把所有分区删掉了，然后按照原来的分区方案重建了新的分区。Reboot 之后 lsblk 是对了，但是 df -h 依旧是原来的分区。一叶说是 resize 没成功，要进 LiveCD 里面 resize2fs。不过我没镜像… 按照一叶的建议挂上 VNC 进 recovery 然后 fsck，再正常进系统执行 <code>resize2fs</code>，成功。</p>
 <p>回过神来的时候发现这种作死的行为我居然手都没抖一下 = = 几百G的数据呐…</p>
 <p>晚上还要做字幕，再去休息下好了…</p>
-</div></article></div></section><footer><div class="paginator"><a href="/2014/05/19/for-loop-in-async-function-with-async-in-it/" class="prev">上一篇</a><a href="/2014/05/15/accelerate-apple-services-in-cn/" class="next">下一篇</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+</div></article></div></section><footer><div class="paginator"><a href="/2014/05/19/for-loop-in-async-function-with-async-in-it/" class="prev">PREV</a><a href="/2014/05/15/accelerate-apple-services-in-cn/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
 var disqus_identifier = '2014/05/17/repo-arm-disk-rescue-and-resize/';
 var disqus_title = '修复 Arch Rollback Machine 磁盘占用';
 var disqus_url = 'https://blog.phoenixlzx.com/2014/05/17/repo-arm-disk-rescue-and-resize/';
