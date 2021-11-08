@@ -6,7 +6,7 @@
   <link href="https://blog.phoenixlzx.com/atom.xml" rel="self"/>
   
   <link href="https://blog.phoenixlzx.com/"/>
-  <updated>2021-07-07T15:05:31.610Z</updated>
+  <updated>2021-11-08T19:16:50.209Z</updated>
   <id>https://blog.phoenixlzx.com/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>笔记：Arch Linux iPXE 基本启动脚本</title>
+    <link href="https://blog.phoenixlzx.com/2021/11/09/basic-ipxe-boot-archlinux/"/>
+    <id>https://blog.phoenixlzx.com/2021/11/09/basic-ipxe-boot-archlinux/</id>
+    <published>2021-11-08T18:54:29.000Z</published>
+    <updated>2021-11-08T19:16:50.209Z</updated>
+    
+    <content type="html"><![CDATA[<p>似乎一直没有（公开且版本够新）的 Arch Linux 无人值守安装配置，所以想做一个。</p><p>参考 netboot.xyz 的 iPXE 配置，简单记录一下：</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!ipxe</span></span><br><span class="line"></span><br><span class="line">set mirror http:<span class="regexp">//</span>archlinux.mirror<span class="regexp">/archlinux/i</span>so/latest</span><br><span class="line">set script http:<span class="regexp">//u</span>nattended.install.script/script.sh</span><br><span class="line">kernel <span class="variable">$&#123;mirror&#125;</span><span class="regexp">/arch/</span>boot<span class="regexp">/x86_64/</span>vmlinuz-linux archisobasedir=arch archiso_http_srv=<span class="variable">$&#123;mirror&#125;</span>/ ip=::: BOOTIF= net.ifnames=<span class="number">0</span> script=<span class="variable">$&#123;script&#125;</span> mirror=auto</span><br><span class="line">initrd <span class="variable">$&#123;base-url&#125;</span><span class="regexp">/arch/</span>boot<span class="regexp">/x86_64/i</span>nitramfs-linux.img</span><br><span class="line">boot</span><br></pre></td></tr></table></figure><p>参考 SYSLINUX 的 PXELINUX 部分和内核 ipconfig 部分的文档写 <code>ip=</code> 参数的时候一边拿不到 DNS 一边疯狂报过多参数，最后发现是<a href="https://bugs.archlinux.org/task/63174">这个 bug</a> 的锅。<strong>而且它还被 netboot.xyz 在脚本里注释出来了我可能需要去检查一下视力</strong>。</p><p>总之目前暂且只能用 DHCP 来在启动过程正确配置网络，否则无法下载系统镜像。</p><p>截至写这篇的 Arch Linux 的官方说明在<a href="https://gitlab.archlinux.org/mkinitcpio/mkinitcpio-archiso/-/blob/ecf3035f9f924fead48f3bec95ca661e642eb5d1/docs/README.bootparams">这里</a>。</p><p>最后就是自动安装脚本了，这个坑暂且撂在这里，以后有时间了再慢慢填…</p><p><del>咕咕咕</del></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;似乎一直没有（公开且版本够新）的 Arch Linux 无人值守安装配置，所以想做一个。&lt;/p&gt;
+&lt;p&gt;参考 netboot.xyz 的 iPXE 配置，简单记录一下：&lt;/p&gt;
+&lt;figure class=&quot;highlight awk&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td cla</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>修复 LVM XFS 的 Input/output error</title>
@@ -394,41 +416,6 @@
     
     
     <category term="Minecraft" scheme="https://blog.phoenixlzx.com/tags/Minecraft/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>新轮子：Planet.js</title>
-    <link href="https://blog.phoenixlzx.com/2017/02/18/dont-ask-me-why-invent-another-planet-river-of-news/"/>
-    <id>https://blog.phoenixlzx.com/2017/02/18/dont-ask-me-why-invent-another-planet-river-of-news/</id>
-    <published>2017-02-17T20:01:31.000Z</published>
-    <updated>2020-09-14T04:20:19.876Z</updated>
-    
-    <content type="html"><![CDATA[<p>在<a href="https://bbs.nyaa.cat/d/709">一开始的选择</a>（需要登陆）中纠结使用 Planet 还是博客的时候就已经在关注 Planet 这个东西。</p><p>非常奇特，本身并不存储什么数据，但是用这样一个简单的方式在极低的成本下将大量的用户和内容结合到了一起。</p><p>终于决定要建立一个社区星球的时候，我才发现它连主题模板都不支持响应式<del>才不是我想写个好看点的主题结果折腾一天无果</del>(ノ=Д=)ノ┻━┻</p><p>总之，使用的是 Ubuntu 仓库内的 <code>planet-venus</code> 包，遇到了各种问题…</p><ul><li>莫名其妙无法获取 feed，浏览器访问正常，用 curl 正常</li><li>莫名其妙无法读取 feed 内容，其他 feedparser 均正常</li><li>对文章内使用相对链接的内容无能为力</li><li>模板语言落后，不要跟我说 old fashion</li><li>输出路径一直是 <code>cwd</code>，不知道是不是 feature。但是这导致我的 home 下面到处都是 output 目录</li></ul><p>强迫症犯了。遂决定自己实现一个<del>因为逻辑很简单啊不过就是把 RSS 抓下来排个序再丢出去么</del></p><p>但是到具体的细节，还是有不少需要考量的东西。</p><a id="more"></a><h3 id="压缩和编码"><a href="#压缩和编码" class="headerlink" title="压缩和编码"></a>压缩和编码</h3><p>有些网站打开了 gzip 压缩，有些网站使用了非 UTF-8 编码…只是暴力读取的结果就是页面上一半正常一半乱码。</p><p>好在 <a href="https://github.com/danmactough/node-feedparser">feedparser</a> 给出了使用 <code>zlib</code> 和 <code>iconv</code> 的<a href="https://github.com/danmactough/node-feedparser/blob/master/examples/compressed.js">代码样例</a>，这个问题就迎刃而解啦。</p><h3 id="相对路径和内容安全"><a href="#相对路径和内容安全" class="headerlink" title="相对路径和内容安全"></a>相对路径和内容安全</h3><p>Planet Venus 似乎是会解析处理文章内不带有协议的链接和图片，以使这些资源能够在 planet 的页面中直接通过原地址访问。但是问题在于，planet venus 似乎只是暴力给所有非完整 URL 形式的资源地址都强行加上协议和主机名。于是就出现了这种情况——</p><ul><li>原文地址 <code>http://www.example.com/2017/01/21/example.html</code></li><li>原文中引用的资源 <code>images/1234.jpg</code></li><li>看起来没毛病，但是 Planet Venus 解析过来就是 <code>http://www.example.com/images/1234.jpg</code></li><li>这似乎看起来也没毛病… 然！而！正确的地址是 <code>http://www.example.com/2017/01/21/images/1234.jpg</code></li></ul><p>…呵呵哒。</p><p>先不管为什么会有这么奇怪的资源路径，但是 Feedparser 却可以正确解析到带有跟路径的地址。也就是上面的资源地址，Feedparser 解析完之后就是正确的 <code>/2017/01/21/images/1234.jpg</code>。</p><p>但是只有正确的相对路径还不够，因为 planet 是单独的站点，直接把 HTML 往页面中插，结果就是浏览器会去请求 <code>planet/2017/01/21/images/1234.jpg</code> 然而 planet 的服务器上并不会有这个资源。</p><p>于是这个问题先放着，来看另一个问题。</p><p>聚合的一个特点是，几乎无法控制来源内容的安全性——因为其他的网站服务器都不是自己维护的，其他人能否保证自己的网站不被入侵、被跨站…都是未知数。如果有订阅的网站被入侵挂了马，阅读/订阅聚合 planet 的用户也会中招。</p><p>解决这个问题，常见的办法就是过滤掉不安全的 HTML tag。于是这里引入了 <a href="https://github.com/punkave/sanitize-html">sanitize-html</a>。</p><p>其实我一开始打算用 regex 直接切掉不过还是不够 robust 所以乖乖去找包了… 但是惊喜的是这个包居然可以实现按规则替换！这就顺利解决了之前的问题，可以将 Feedparser 解析得到的路径加上正确的协议和主机地址。</p><figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">sanitizeHtml</span>(html, &#123;</span><br><span class="line">    <span class="attribute">transformTags</span>: &#123;</span><br><span class="line">        <span class="comment">// restore origin links</span></span><br><span class="line">        <span class="string">&#x27;img&#x27;</span>: function (tagName, attribs) &#123;</span><br><span class="line">            if (attribs &amp;&amp; attribs.src) &#123;</span><br><span class="line">                if (attribs.src.startsWith(<span class="string">&#x27;/&#x27;</span>) &amp;&amp; attribs.src.charAt(<span class="number">1</span>) !== <span class="string">&#x27;/&#x27;</span>) &#123;</span><br><span class="line">                <span class="comment">// root-relative path, add corresponding host before root</span></span><br><span class="line">                    return &#123;</span><br><span class="line">                        <span class="attribute">tagName</span>: tagName,</span><br><span class="line">                        <span class="attribute">attribs</span>: &#123;</span><br><span class="line">                            <span class="attribute">src</span>: host + attribs.src</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;;</span><br><span class="line">                &#125; else if (attribs.src.startsWith(<span class="string">&#x27;//&#x27;</span>) ||</span><br><span class="line">                    attribs.src.startsWith(<span class="string">&#x27;http://&#x27;</span>) ||</span><br><span class="line">                    attribs.src.startsWith(<span class="string">&#x27;https://&#x27;</span>)) &#123;</span><br><span class="line">                    <span class="comment">// absolute path, do nothing</span></span><br><span class="line">                    <span class="selector-tag">return</span> &#123;</span><br><span class="line">                        <span class="attribute">tagName</span>: tagName,</span><br><span class="line">                        <span class="attribute">attribs</span>: attribs</span><br><span class="line">                    &#125;;</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    <span class="comment">// Feedparser may not correctly recognize this path, try with host/path</span></span><br><span class="line">                    <span class="selector-tag">return</span> &#123;</span><br><span class="line">                        <span class="attribute">tagName</span>: tagName,</span><br><span class="line">                        <span class="attribute">attribs</span>: &#123;</span><br><span class="line">                            <span class="attribute">src</span>: host + <span class="string">&#x27;/&#x27;</span> + attribs.src</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// don&#x27;t miss the default action or it throws exception.</span></span><br><span class="line">            return &#123;</span><br><span class="line">                <span class="attribute">tagName</span>: tagName,</span><br><span class="line">                <span class="attribute">attribs</span>: attribs</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure><p>解决了文章内容相对路径的问题，要过滤特定的标签或者标签属性则是这个包本来就要做的事情了，小菜。</p><p>处理完文章对象之后，用 <code>Array.prototype.sort</code> 带一个 <code>compare function</code> 通过更新日期排序，接下来就可以简单渲染页面和 RSS 文件啦。</p><h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>一些不太常见的功能，例如 http proxy 的支持（在特殊的网络环境下可能用到），长文章仅展示 summary 并提示继续阅读，avatar 的支持，模板和输出目录保持和配置文件的相对路径，等。</p><p>然后作为深有体会——</p><figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CSS</span><br><span class="line"><span class="keyword">IS</span></span><br><span class="line">AWESOME</span><br></pre></td></tr></table></figure><p>因此打死不写前端的家伙选择直接套用了 YUI Library 的 purecss 框架做一个还算看得过去的模板。至少… 几番折腾之后把响应式和 <code>pre</code> 等难缠的宽度搞定了<del>顺便玩了下 media query</del>。</p><p>于是代码 -&gt; <a href="https://github.com/phoenixlzx/planet.js">GitHub</a></p><p>以及已经在使用的 <a href="https://planet.nyaa.cat/">Planet NyaaCat</a></p><p>从开坑到基本完善大概花了 15 个小时… 果然长时间不写代码手生<del>才不是冻得手打字都变慢了呢</del></p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;在&lt;a href=&quot;https://bbs.nyaa.cat/d/709&quot;&gt;一开始的选择&lt;/a&gt;（需要登陆）中纠结使用 Planet 还是博客的时候就已经在关注 Planet 这个东西。&lt;/p&gt;
-&lt;p&gt;非常奇特，本身并不存储什么数据，但是用这样一个简单的方式在极低的成本下将大量的用户和内容结合到了一起。&lt;/p&gt;
-&lt;p&gt;终于决定要建立一个社区星球的时候，我才发现它连主题模板都不支持响应式&lt;del&gt;才不是我想写个好看点的主题结果折腾一天无果&lt;/del&gt;(ノ=Д=)ノ┻━┻&lt;/p&gt;
-&lt;p&gt;总之，使用的是 Ubuntu 仓库内的 &lt;code&gt;planet-venus&lt;/code&gt; 包，遇到了各种问题…&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;莫名其妙无法获取 feed，浏览器访问正常，用 curl 正常&lt;/li&gt;
-&lt;li&gt;莫名其妙无法读取 feed 内容，其他 feedparser 均正常&lt;/li&gt;
-&lt;li&gt;对文章内使用相对链接的内容无能为力&lt;/li&gt;
-&lt;li&gt;模板语言落后，不要跟我说 old fashion&lt;/li&gt;
-&lt;li&gt;输出路径一直是 &lt;code&gt;cwd&lt;/code&gt;，不知道是不是 feature。但是这导致我的 home 下面到处都是 output 目录&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;强迫症犯了。遂决定自己实现一个&lt;del&gt;因为逻辑很简单啊不过就是把 RSS 抓下来排个序再丢出去么&lt;/del&gt;&lt;/p&gt;
-&lt;p&gt;但是到具体的细节，还是有不少需要考量的东西。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="Node.js" scheme="https://blog.phoenixlzx.com/tags/Node-js/"/>
-    
-    <category term="RSS" scheme="https://blog.phoenixlzx.com/tags/RSS/"/>
-    
-    <category term="Feed" scheme="https://blog.phoenixlzx.com/tags/Feed/"/>
     
   </entry>
   
