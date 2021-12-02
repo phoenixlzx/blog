@@ -6,7 +6,7 @@
   <link href="https://blog.phoenixlzx.com/atom.xml" rel="self"/>
   
   <link href="https://blog.phoenixlzx.com/"/>
-  <updated>2021-11-08T19:16:50.209Z</updated>
+  <updated>2021-12-02T13:44:34.994Z</updated>
   <id>https://blog.phoenixlzx.com/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>配置 Fail2ban 保护 Proxmox VE</title>
+    <link href="https://blog.phoenixlzx.com/2021/12/02/protect-proxmox-ve-with-fail2ban/"/>
+    <id>https://blog.phoenixlzx.com/2021/12/02/protect-proxmox-ve-with-fail2ban/</id>
+    <published>2021-12-02T13:40:32.000Z</published>
+    <updated>2021-12-02T13:44:34.994Z</updated>
+    
+    <content type="html"><![CDATA[<p>各种情况下 Proxmox VE 的登陆界面需要暴露在公网的时候，需要使用 fail2ban 来保护它不被暴力破解。</p><a id="more"></a><h3 id="创建-filter"><a href="#创建-filter" class="headerlink" title="创建 filter"></a>创建 filter</h3><p>文件 <code>/etc/fail2ban/filter.d/proxmox.conf</code></p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[Definition]</span><br><span class="line">failregex = pvedaemon\[.<span class="number">*a</span>uthentication failure; <span class="attribute">rhost</span>=&lt;HOST&gt; <span class="attribute">user</span>=.* <span class="attribute">msg</span>=.*</span><br><span class="line">ignoreregex =</span><br></pre></td></tr></table></figure><h3 id="创建-jail"><a href="#创建-jail" class="headerlink" title="创建 jail"></a>创建 jail</h3><p>文件 <code>/etc/fail2ban/jail.d/proxmox.conf</code></p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[proxmox]</span><br><span class="line">enabled = <span class="literal">true</span></span><br><span class="line">port = https,http,8006</span><br><span class="line">filter = proxmox</span><br><span class="line">logpath = /var/log/daemon.log</span><br><span class="line">maxretry = 3</span><br><span class="line"><span class="comment"># 1 hour</span></span><br><span class="line">bantime = 3600</span><br></pre></td></tr></table></figure><h3 id="重启-fail2ban"><a href="#重启-fail2ban" class="headerlink" title="重启 fail2ban"></a>重启 fail2ban</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; systemctl restart fail2ban</span><br></pre></td></tr></table></figure><p>然后检查是否配置生效</p><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">~&gt; fail2ban-client <span class="keyword">status</span></span><br><span class="line"><span class="keyword">Status</span></span><br><span class="line">|- <span class="keyword">Number</span> of jail:      <span class="number">2</span></span><br><span class="line">`- Jail list:   proxmox, sshd</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;各种情况下 Proxmox VE 的登陆界面需要暴露在公网的时候，需要使用 fail2ban 来保护它不被暴力破解。&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>笔记：Arch Linux iPXE 基本启动脚本</title>
@@ -393,29 +410,6 @@
     <category term="TFTP" scheme="https://blog.phoenixlzx.com/tags/TFTP/"/>
     
     <category term="Debrick" scheme="https://blog.phoenixlzx.com/tags/Debrick/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Minecraft 服务器资源控制策略：AI 抑制而非数量限制</title>
-    <link href="https://blog.phoenixlzx.com/2017/05/05/reduce-minecraft-server-lag-without-limit-mob-amount/"/>
-    <id>https://blog.phoenixlzx.com/2017/05/05/reduce-minecraft-server-lag-without-limit-mob-amount/</id>
-    <published>2017-05-04T16:42:42.000Z</published>
-    <updated>2020-09-14T04:20:19.876Z</updated>
-    
-    <content type="html"><![CDATA[<p>Minecraft 的 lag 问题已经司空见惯，各种控制资源消耗和卡顿的插件也层出不穷。但是它们几乎都非常用力地在一个点上：控制实体数量。</p><p>这并不无道理，因为 Minecraft 中最消耗资源的部分就是实体。但是暴力控制实体数量会导致刷怪塔无法正常工作、掉落物清理速度过快等问题，在生存服务器中可能引发玩家的强烈不满。</p><p>所以，<a href="https://nyaa.cat/">喵窝</a>开发组从另一个角度做出了一些尝试。</p><a id="more"></a><h3 id="启发"><a href="#启发" class="headerlink" title="启发"></a>启发</h3><p>生物实体的数量巨大，主要集中的地区显然不是野外的自然刷怪区，而是玩家聚集的刷怪场、村民工程、动物养殖场等。如果不限制生物的数量和密度同时降低资源消耗，那么只能从生物实体的特性入手了。</p><p>Minecraft 最近的版本中引用了 <code>NoAI</code> 的 NBT Tag，带有此标签的生物将不会进行 AI 计算。换句话说，除了占用服务器内存中的一点数据，几乎不会对这个生物实体有任何其他的 CPU 算力消耗。</p><p>也就是说，实体消耗的算力资源，绝大部分都是 AI 计算的消耗。</p><h3 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h3><p>抓上一票人做了一些测试，结果证实生物失去 AI 后大幅降低了 CPU 的算力消耗。这是个 positive 的信号，但是接下来的测试则遇到了问题。</p><p>对于养殖场，等生物数量变化不大（或者说只是定期来清理并重新养殖一次）的设施，生物失去 AI 的影响很小，只有在重新繁殖时需要恢复 AI。但是刷怪塔则因为生物没有 AI，同时也被强制不受重力影响而几乎无法使用，即便同时设置 <code>NoGravity</code> 为 <code>false</code> 也无效。</p><p>开发组中 <a href="https://im.librazy.org/">@Librazy</a> 提到了 Spigot 的一个<a href="https://www.spigotmc.org/wiki/spigot-configuration/">参数</a> <code>nerf-spawner-mobs</code>，开启时刷怪笼生成的生物将不会拥有 AI，但是会被外界影响（例如水流和火球等）而移动。这个选项是全局的，因此不需要开启，只需要反射 spigot 中设置该功能的方法即可。</p><p>于是整个方案的流程便是当服务器卡顿时抑制生物密集区的生物 AI 从而降低资源占用，同时最大程度上保证玩家对生物的需求。「服务器卡顿」的考量以服务器 TPS 而非实体数量为准，当服务器 TPS 高于一定值时即认为服务器没有超负荷，不会有任何操作，最大程度上利用硬件的性能。</p><h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>插件主要由开发组的 <a href="https://github.com/cyilin">@Cylin</a> 和 <a href="https://github.com/Librazy">@Librazy</a> 编写，源代码以 MIT 协议发布在 <a href="https://github.com/NyaaCat/yasui">GitHub</a> 上。</p><p>插件每隔一段时间扫描服务器的 TPS 确认运行状况，如果 TPS 低于阈值则触发 AI 控制，TPS 高于一定值且持续一段时间即认为服务器已恢复正常运行状态，自动恢复被抑制的实体 AI 减少对生存体验的影响。</p><p>实现过程中额外添加了一些额外可能被生存服务器用到的功能：</p><ul><li>per-world 控制，如果玩家需要建造以仇恨为基础的小黑塔，可以关闭对末地的控制。</li><li>实体总量和单区块实体密度在 AI 抑制时纳入考虑，更加精准抑制资源消耗较高的区块。</li></ul><h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p><a href="https://github.com/NyaaCat/yasui">yasui</a> 插件在 <a href="https://craft.moe/">毛玉線圈物語</a> 服务器中应用测试。由于近期玩家数量爆炸式增长（日常在线 5 人到 ~30 人甚至 50 人），各种实体控制插件均告无效。yasui 插件应用后被证实数次发挥作用，没有任何实体数量限制的前提下将服务器 TPS 稳定在 19 以上，服务器实体承载数量从 ~2500 提到至接近 5000，并且还有继续提高的可能（数次触发中最高一次单世界实体记录是 4808，其他世界中仍有大约 2000 实体未被计入）。</p><p><del>吐槽：你们贼能刷</del></p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;Minecraft 的 lag 问题已经司空见惯，各种控制资源消耗和卡顿的插件也层出不穷。但是它们几乎都非常用力地在一个点上：控制实体数量。&lt;/p&gt;
-&lt;p&gt;这并不无道理，因为 Minecraft 中最消耗资源的部分就是实体。但是暴力控制实体数量会导致刷怪塔无法正常工作、掉落物清理速度过快等问题，在生存服务器中可能引发玩家的强烈不满。&lt;/p&gt;
-&lt;p&gt;所以，&lt;a href=&quot;https://nyaa.cat/&quot;&gt;喵窝&lt;/a&gt;开发组从另一个角度做出了一些尝试。&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="Minecraft" scheme="https://blog.phoenixlzx.com/categories/Minecraft/"/>
-    
-    
-    <category term="Minecraft" scheme="https://blog.phoenixlzx.com/tags/Minecraft/"/>
     
   </entry>
   
