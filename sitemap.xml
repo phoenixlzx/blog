@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://blog.phoenixlzx.com/2023/10/08/ipmitool-bonding-note/</loc>
+    
+    <lastmod>2023-10-08</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.phoenixlzx.com/2023/06/27/remote-flash-h330-to-hba/</loc>
     
     <lastmod>2023-06-26</lastmod>
@@ -480,7 +487,7 @@
 
   <url>
     <loc>https://blog.phoenixlzx.com/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -488,406 +495,406 @@
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/SSL/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/NGINX/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Server/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Configuration/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/IPKVM/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/VNC/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Minecraft/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/MyPet/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Fibonacci/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Algorithm/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/WordPress/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Script/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Arch-Linux/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Linux/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Network/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Multimedia/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Anime/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/FFmpeg/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/DNS/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Unbound/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/MongoDB/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Node-js/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/KDE/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Artwork/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Practise/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/RSS/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Feed/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/ThinkPad/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Fingerprint/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Ubuntu/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/VPN/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/IPSec/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/iptables/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Kernel/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/DKMS/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Telegram/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/OS-X/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/uWSGI/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Configration/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Blender/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/3D/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/ImageMagick/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/netflow/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/sflow/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/fastnetmon/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/influxdb/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/grafana/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/MySQL/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/PowerDNS/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Router/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/TFTP/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Debrick/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Filesystem/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Weblate/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/l10n/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Translation/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/AWS/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/tags/Cloud-Computing/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -896,70 +903,70 @@
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Notes/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Life/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Algorithm/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Practise/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Database/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Node-js/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Linux/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Network/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Minecraft/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://blog.phoenixlzx.com/categories/Note/</loc>
-    <lastmod>2023-06-26</lastmod>
+    <lastmod>2023-10-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>

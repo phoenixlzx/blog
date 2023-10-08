@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="zh_CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> AMI 主板 IPMI Bonding with ipmitool · Phoenix's island</title><meta name="description" content="AMI 主板 IPMI Bonding with ipmitool - Phoenix Nemo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/null"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://blog.phoenixlzx.com/atom.xml" title="Phoenix's island"><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Phoenix's island" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/static/img/avatar/avatar.jpg"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li><li class="nav-list-item"><a href="/links/" target="_self" class="nav-list-link">LINKS</a></li><li class="nav-list-item"><a href="https://github.com/phoenixlzx" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">AMI 主板 IPMI Bonding with ipmitool</h1><div class="post-info">2023年10月8日</div><div class="post-content"><p>每日笔记时间。</p>
+<p>这东西甚至没有文档。</p>
+<a id="more"></a>
+
+<p>于是折腾多了一些奇奇怪怪的 AMI 主板之后发现这货的 IPMI 居然有多个端口而且要 bonding。</p>
+<p>虽然完全不懂他们为何要做这么脑残的设计，总之直接操作 ipmitool 配置的 IP 不生效，只能在访问不到 IPMI GUI 的情况下组 bonding 了。</p>
+<p>启用 bonding</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x71 6 0 3</span><br><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x71 0x1 0x1 0x0 0x1 0x64 0x0 0x3 0x1</span><br></pre></td></tr></table></figure>
+
+<p>另外：禁用 bonding 是</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool raw <span class="number">0x32</span> <span class="number">0x71</span> <span class="number">0x1</span> <span class="number">0x0</span> <span class="number">0x0</span> <span class="number">0x1</span> <span class="number">0x64</span> <span class="number">0x0</span> <span class="number">0x3</span> <span class="number">0x1</span></span><br></pre></td></tr></table></figure>
+
+<p>然后检查状态，执行</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x72 0x1 0x0 0x0</span><br></pre></td></tr></table></figure>
+
+<p>如果返回 <code>00 00 01 64 00 03 01</code> 则为禁用，<code>01 00 01 64 00 03 01</code> 则是启用。</p>
+<p>然后正常配置 lan 参数就可以了。</p>
+<p>顺便再臭骂 AMI 不干人事。</p>
+</div></article></div></section><footer><div class="paginator"><a href="/2023/06/27/remote-flash-h330-to-hba/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'phoenixhexo';
+var disqus_identifier = '2023/10/08/ipmitool-bonding-note/';
+var disqus_title = 'AMI 主板 IPMI Bonding with ipmitool';
+var disqus_url = 'https://blog.phoenixlzx.com/2023/10/08/ipmitool-bonding-note/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//phoenixhexo.disqus.com/count.js" async></script><div class="copyright"><p>© 2014 - 2023 <a href="https://blog.phoenixlzx.com">Phoenix Nemo</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><!--script(async src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML")--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-48847648-1",'auto');ga('send','pageview');</script></body></html>

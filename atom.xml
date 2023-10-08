@@ -6,7 +6,7 @@
   <link href="https://blog.phoenixlzx.com/atom.xml" rel="self"/>
   
   <link href="https://blog.phoenixlzx.com/"/>
-  <updated>2023-06-26T16:39:46.967Z</updated>
+  <updated>2023-10-08T08:05:40.847Z</updated>
   <id>https://blog.phoenixlzx.com/</id>
   
   <author>
@@ -15,6 +15,24 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>AMI 主板 IPMI Bonding with ipmitool</title>
+    <link href="https://blog.phoenixlzx.com/2023/10/08/ipmitool-bonding-note/"/>
+    <id>https://blog.phoenixlzx.com/2023/10/08/ipmitool-bonding-note/</id>
+    <published>2023-10-08T08:00:33.000Z</published>
+    <updated>2023-10-08T08:05:40.847Z</updated>
+    
+    <content type="html"><![CDATA[<p>每日笔记时间。</p><p>这东西甚至没有文档。</p><a id="more"></a><p>于是折腾多了一些奇奇怪怪的 AMI 主板之后发现这货的 IPMI 居然有多个端口而且要 bonding。</p><p>虽然完全不懂他们为何要做这么脑残的设计，总之直接操作 ipmitool 配置的 IP 不生效，只能在访问不到 IPMI GUI 的情况下组 bonding 了。</p><p>启用 bonding</p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x71 6 0 3</span><br><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x71 0x1 0x1 0x0 0x1 0x64 0x0 0x3 0x1</span><br></pre></td></tr></table></figure><p>另外：禁用 bonding 是</p><figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool raw <span class="number">0x32</span> <span class="number">0x71</span> <span class="number">0x1</span> <span class="number">0x0</span> <span class="number">0x0</span> <span class="number">0x1</span> <span class="number">0x64</span> <span class="number">0x0</span> <span class="number">0x3</span> <span class="number">0x1</span></span><br></pre></td></tr></table></figure><p>然后检查状态，执行</p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~&gt; ipmitool<span class="built_in"> raw </span>0x32 0x72 0x1 0x0 0x0</span><br></pre></td></tr></table></figure><p>如果返回 <code>00 00 01 64 00 03 01</code> 则为禁用，<code>01 00 01 64 00 03 01</code> 则是启用。</p><p>然后正常配置 lan 参数就可以了。</p><p>顺便再臭骂 AMI 不干人事。</p>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;每日笔记时间。&lt;/p&gt;
+&lt;p&gt;这东西甚至没有文档。&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>远程转换 H330 为 HBA330</title>
@@ -358,36 +376,6 @@
     <category term="l10n" scheme="https://blog.phoenixlzx.com/tags/l10n/"/>
     
     <category term="Translation" scheme="https://blog.phoenixlzx.com/tags/Translation/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>使用 Blender 渲染 Minecraft 3D 效果图</title>
-    <link href="https://blog.phoenixlzx.com/2017/12/18/minecraft-3d-render-with-blender/"/>
-    <id>https://blog.phoenixlzx.com/2017/12/18/minecraft-3d-render-with-blender/</id>
-    <published>2017-12-18T05:11:06.000Z</published>
-    <updated>2020-09-14T04:20:19.882Z</updated>
-    
-    <content type="html"><![CDATA[<p>突发奇想渲染 Minecraft 3D 效果图，首先用 Chunky 尝试了一下发现效果虽好但：</p><ul><li>人物动作过于限制</li><li>渲染太！慢！了！</li></ul><p>然而并买不起 Cinema 4D，所以来尝试一下 Blender 啦~</p><a id="more"></a><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul><li>比较好的显卡。我的家用游戏机是 NVIDIA GTX 1080Ti，Cycles Render 可以 offload 掉绝大部分 CPU 的压力。</li><li>安装 <a href="https://www.blender.org/">Blender</a>。</li><li>下载 <a href="http://www.jmc2obj.net/">jmc2obj</a>。</li><li>下载 <a href="http://theduckcow.com/dev/blender/mcprep/">MCPrep</a>。</li><li>准备地图、材质、玩家皮肤等资源。</li></ul><h4 id="导出地图文件到-obj"><a href="#导出地图文件到-obj" class="headerlink" title="导出地图文件到 obj"></a>导出地图文件到 obj</h4><p>启动 jmc2obj，在最上方选择地图存档位置并单击 load。在 UI 里选择要导出的地图部分，点击 Export。在左侧的选项中依次：</p><ol><li>Map Scale = 1.0</li><li>Center 选中，否则可能会出现在距离地图很远的地方</li><li>Texture Export<ul><li>Pre-scale textures - 如果是原版材质，建议设置为 4x。如果是高清材质，按需要选择即可。</li><li><strong>不勾选</strong> Export alpha channel in separate file(s)</li><li><strong>不勾选</strong> Export all textures in a single file</li><li>选择从 Minecraft 安装里导出默认材质，或自行选择一个额外的材质包。</li><li>然后选择材质的导出位置。建议在目标目录中新建一个 <code>textures</code> 目录，然后导出到此目录中。此目录里面会出现一个 <code>tex</code> 目录，包含所有的材质文件。</li></ul></li></ol><p>材质导出进度完成后，开始导出地图文件。在右侧的选项中依次：</p><ol><li>取消所有的选项勾选</li><li>勾选 Create a separate object for each material</li><li>可选勾选：<ul><li>Render Entities</li><li>Occulude different adjacent materials</li><li>Optimize mesh</li><li>Do not allow duplicate vertexes</li></ul></li><li>其余选项均保持非勾选状态</li><li>点击 Export 导出到之前创建的 <code>textures</code> 的 <strong>同级目录</strong></li><li>可能会遇到 banner 找不到材质的问题，忽略继续。导出后<strong>还不能使用</strong>，需要一个简单而 ugly 的 hack - 再导出一遍覆盖之前的 obj 和 mtl 文件。</li></ol><p>导出后的工作目录如下：</p><p><img src="/static/img/posts/blender-cwd-20171218.jpg" alt="Blender Working Directory"></p><p>.obj 文件是地图数据，.mtl 则是刚才导出材质的材质索引，指向 <code>textures/tex</code> 的相对路径，因此这些文件的相对位置不能改变。</p><h4 id="安装-MCPrep"><a href="#安装-MCPrep" class="headerlink" title="安装 MCPrep"></a>安装 MCPrep</h4><p>启动 Blender，在 File -&gt; User Preferences -&gt; Add-ons 里，选择 <code>Install Add-on from File...</code></p><p>然后点击下载好的 MCPrep 的 .zip 文件即可。</p><h2 id="导入-blender"><a href="#导入-blender" class="headerlink" title="导入 blender"></a>导入 blender</h2><p>启动 Blender，先删掉默认的 object 和 lamp，然后依次选择 File -&gt; Import -&gt; Wavefront (.obj)</p><p>选择刚才生成的 .obj 文件导入。</p><p><em>（大概会卡一会儿… 喝杯茶先）</em></p><p>导入完成后，首先需要设置材质。选中所有 object （快捷键 A，如果被反选则再摁一次即可），左侧标签页切换到 MCPrep，然后点击 Prep Materials。</p><p><img src="/static/img/posts/prep-materials-20171218.jpg" alt="Prep Materials"></p><p>进入 Walk Navigation 模式（或者其他熟悉的移动模式），Add -&gt; lamp -&gt; Sun 然后将添加的 Sun 光源移动到地图的合适位置（比如一个边角）。</p><p><img src="/static/img/posts/walk-navigation-20171218.jpg" alt="Walk Navigation"></p><p>然后移动 Viewport 到合适的位置，将默认的 Camera 对齐到当前视角。快捷键 <code>Ctrl+Alt+0</code></p><p><img src="/static/img/posts/align-camera-view-20171218.jpg" alt="Align Camera to View"></p><h4 id="设置背景"><a href="#设置背景" class="headerlink" title="设置背景"></a>设置背景</h4><p>在 Blender 的上方菜单栏中，有 Blender Render 和 Cycles Render 两个选项。</p><p>如果使用 Blender Render，则需要在 Sun 的属性里设置 Sky &amp; Atmosphere 并设置 Ray Shadow 以使光源和阴影正确对应。</p><p>如果使用 Cycles Render，则在 World 属性中设置 background 为 Sky Texture。</p><p><img src="/static/img/posts/world-sky-texture-20171218.jpg" alt="Sky texture"></p><p>当然也可以使用自己的天空图像或其他材质。</p><h2 id="渲染"><a href="#渲染" class="headerlink" title="渲染"></a>渲染</h2><p>在渲染属性中设置使用 CPU 或者 GPU 渲染图像，并可以设置分辨率等。</p><p><img src="/static/img/posts/render-properties-20171218.jpg" alt="Render Properties"></p><p>修改好设置，在 Blender 上方菜单栏中点击 Render -&gt; Render Image 即可开始渲染啦~</p><h4 id="玩家和实体"><a href="#玩家和实体" class="headerlink" title="玩家和实体"></a>玩家和实体</h4><p>我相信熟练使用 C4D/Maya/Blender 的玩家们不需要看这篇教程… 所以玩家实体的高级用法不多讲。</p><p>需要的材料是一份玩家或者其他实体的 Rig，在 PlanetMinecraft 或者 MinecraftForum 上有很多。贴上皮肤就可以用啦。</p><p>在 player rig 中调整好 pose，保存。在要渲染的世界工程里，选择 File -&gt; Append，然后选择刚才的玩家 pose 的 blender 文件，进入后选择 Scene 并 append。</p><p><em>选择 Scene 的原因是有不少 rig 并不是一个单一 object，如果是单一 object，则可以直接导入 object。</em></p><p>在右上方的 object 列表中选择刚才 append 的 scene，定位玩家实体并全部选中 -&gt; Ctrl+C 复制 -&gt; 返回渲染世界 -&gt; Ctrl+V 粘贴。</p><p>选择粘贴进来的玩家实体，然后调整到合适的位置。</p><h2 id="成果"><a href="#成果" class="headerlink" title="成果"></a>成果</h2><p>这大概是我第一次玩 blender。</p><p>总之以下是成果啦。</p><p>比如某玩家的 pose 效果图：</p><p><img src="/static/img/posts/pose-leeder-20171218.jpg" alt="leeder&#39;s pose"></p><p>比 chunky 的动作自然多了吧~</p><p>最后是完成的效果：</p><p><img src="/static/files/xport1.1080.jpg" alt="Project xport"></p><p>Happy Rendering~</p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;突发奇想渲染 Minecraft 3D 效果图，首先用 Chunky 尝试了一下发现效果虽好但：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;人物动作过于限制&lt;/li&gt;
-&lt;li&gt;渲染太！慢！了！&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;然而并买不起 Cinema 4D，所以来尝试一下 Blender 啦~&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="Minecraft" scheme="https://blog.phoenixlzx.com/categories/Minecraft/"/>
-    
-    
-    <category term="Minecraft" scheme="https://blog.phoenixlzx.com/tags/Minecraft/"/>
-    
-    <category term="Blender" scheme="https://blog.phoenixlzx.com/tags/Blender/"/>
-    
-    <category term="3D" scheme="https://blog.phoenixlzx.com/tags/3D/"/>
     
   </entry>
   
