@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://blog.phoenixlzx.com/2021/12/02/protect-proxmox-ve-with-fail2ban/</loc>
+    
+    <lastmod>2023-10-08</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.phoenixlzx.com/2023/10/08/ipmitool-bonding-note/</loc>
     
     <lastmod>2023-10-08</lastmod>
@@ -33,13 +40,6 @@
     <loc>https://blog.phoenixlzx.com/links/index.html</loc>
     
     <lastmod>2022-02-03</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://blog.phoenixlzx.com/2021/12/02/protect-proxmox-ve-with-fail2ban/</loc>
-    
-    <lastmod>2021-12-02</lastmod>
     
   </url>
   
